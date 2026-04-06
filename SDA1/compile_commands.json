@@ -1,0 +1,30 @@
+[
+  {
+    "file": "Implements.c",
+    "arguments": [
+      "gcc",
+      "-std=gnu23",
+      "-Iinclude",
+      "-c",
+      "Implements.c",
+      "-o",
+      "bin/Implements.o"
+    ],
+    "directory": "/home/Nova/repos/TemePoli/SDA1",
+    "output": "bin/Implements.o"
+  },
+  {
+    "file": "String.c",
+    "arguments": [
+      "gcc",
+      "-std=gnu23",
+      "-Iinclude",
+      "-c",
+      "String.c",
+      "-o",
+      "bin/String.o"
+    ],
+    "directory": "/home/Nova/repos/TemePoli/SDA1",
+    "output": "bin/String.o"
+  }
+]

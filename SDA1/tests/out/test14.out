@@ -1,0 +1,5 @@
+Incident 1 has medium priority, the following description: "first medium incident" and is intervened
+Incident 2 has medium priority, the following description: "second medium incident" and is queued
+Incident 2 has medium priority, the following description: "second medium incident" and is intervened
+Incident 1 was assigned to unit 2, and has the following status: "intervened"
+Incident 2 was assigned to unit 1, and has the following status: "intervened"

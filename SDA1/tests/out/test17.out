@@ -1,0 +1,11 @@
+Number of available units: 4
+Incident 2 has high priority, the following description: "explosion reported" and is intervened
+Incident 3 has medium priority, the following description: "car accident" and is intervened
+Unit 1 is type A and is unavailable
+Unit 2 is type B and is unavailable
+Number of available units: 3
+Incident 1 has low priority, the following description: "noise complaint" and is intervened
+Incident 2 was assigned to unit 1, and has the following status: "solved"
+Incident 3 was assigned to unit 2, and has the following status: "intervened"
+Incident 1 was assigned to unit 3, and has the following status: "intervened"
+Unit 3 is type C and is unavailable

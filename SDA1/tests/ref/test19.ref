@@ -1,0 +1,20 @@
+Number of available units: 7
+Incident 101 was assigned to unit 1, and has the following status: "intervened"
+Incident 102 was assigned to unit 2, and has the following status: "intervened"
+Incident 103 was assigned to unit 3, and has the following status: "intervened"
+Incident 105 was assigned to unit 4, and has the following status: "intervened"
+Number of available units: 5
+Incident 102 has high priority, the following description: "major highway pileup" and is intervened
+Incident 104 has low priority, the following description: "noise complaint" and is intervened
+Incident 105 has medium priority, the following description: "fallen power line" and is intervened
+Incident 106 has low priority, the following description: "stuck elevator" and is queued
+Incident 104 has low priority, the following description: "noise complaint" and is queued
+Incident 105 has medium priority, the following description: "fallen power line" and is queued
+Unit 1 is type A and is available
+Unit 2 is type B and is unavailable
+Unit 3 is type C and is available
+Unit 4 is type A and is available
+Number of available units: 6
+Incident 101 was assigned to unit 1, and has the following status: "solved"
+Incident 102 was assigned to unit 2, and has the following status: "intervened"
+Incident 103 was assigned to unit 3, and has the following status: "solved"

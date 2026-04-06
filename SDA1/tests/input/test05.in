@@ -1,0 +1,8 @@
+2
+1 A
+2 B
+4
+ADD_INCIDENT 1 high "fire in school"
+DISPATCH
+SHOW_INCIDENT 1
+SHOW_UNIT 1

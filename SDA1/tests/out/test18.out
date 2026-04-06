@@ -1,0 +1,15 @@
+Incident 10 was assigned to unit 1, and has the following status: "intervened"
+Incident 13 was assigned to unit 2, and has the following status: "intervened"
+Incident 11 was assigned to unit 3, and has the following status: "intervened"
+Number of available units: 4
+Incident 11 has medium priority, the following description: "injured pedestrian" and is queued
+Incident 12 has low priority, the following description: "noise complaint district 2" and is queued
+Incident 13 has high priority, the following description: "gas leak near school" and is intervened
+Incident 14 has medium priority, the following description: "road blocked by tree" and is queued
+Unit 1 is type A and is available
+Unit 2 is type B and is unavailable
+Unit 3 is type C and is available
+Incident 10 was assigned to unit 1, and has the following status: "solved"
+Incident 13 was assigned to unit 2, and has the following status: "intervened"
+Incident 11 was assigned to unit 4, and has the following status: "intervened"
+Number of available units: 3
