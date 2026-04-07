@@ -42,6 +42,21 @@ static IEnumerator_##T DoublyLinkedListGetEnumerator_##T(const IEnumerable_##T T
 	};                                                                                  \
 	return base(result);                                                                \
 }                                                                                       \
+DoublyLinkedList_##T DoublyLinkedList_##T##__ctor()                                     \
+{                                                                                       \
+	DoublyLinkedList_##T allocinit(DoublyLinkedList_##T, result) {                      \
+		._parent = (struct IEnumerable_##T##_s) {                                       \
+			.GetEnumerator = DoublyLinkedListGetEnumerator_##T                          \
+		},                                                                              \
+		.Count = 0,                                                                     \
+	};                                                                                  \
+	allocinit(DoublyLinkedNode_##T, result->_start) {                                   \
+			.Next = result->_start,                                                     \
+			.Prev = result->_start,                                                     \
+			.Value = default(T)                                                         \
+	};                                                                                  \
+	return result;                                                                      \
+}                                                                                       \
 void DoublyLinkedList_##T##_Add(DoublyLinkedList_##T source, T item)                    \
 {                                                                                       \
 	source->Count += 1;                                                                 \
@@ -55,7 +70,7 @@ void DoublyLinkedList_##T##_Add(DoublyLinkedList_##T source, T item)            
 void DoublyLinkedList_##T##_Remove(DoublyLinkedList_##T source, T item)                 \
 {                                                                                       \
 	DoublyLinkedNode_##T curr = source->_start->Next;                                   \
-	while (curr->Value != item && curr != source->_start) curr = curr->Next;            \
+	while (!equals(curr->Value, item) && curr != source->_start) curr = curr->Next;     \
 	if (curr == source->_start) return;                                                 \
 	source->Count -= 1;                                                                 \
 	curr->Prev->Next = curr->Next;                                                      \
@@ -88,36 +103,6 @@ void DoublyLinkedList_##T##_Insert(DoublyLinkedList_##T source, T item, int inde
 		.Next = current->Next,                                                          \
 	};                                                                                  \
 	current->Next = newNode;                                                            \
-}                                                                                       \
-DoublyLinkedList_##T DoublyLinkedList_##T##__ctor()                                     \
-{                                                                                       \
-	DoublyLinkedList_##T allocinit(DoublyLinkedList_##T, result) {                      \
-		._parent = (struct IEnumerable_##T##_s) {                                       \
-			.GetEnumerator = DoublyLinkedListGetEnumerator_##T                          \
-		},                                                                              \
-		.Count = 0,                                                                     \
-	};                                                                                  \
-	allocinit(DoublyLinkedNode_##T, result->_start) {                                   \
-			.Next = result->_start,                                                     \
-			.Prev = result->_start,                                                     \
-			.Value = default(T)                                                         \
-	};                                                                                  \
-	return result;                                                                      \
-}                                                                                       \
-DoublyLinkedList_##T Enumerable_##T##_ToDoublyLinkedList(IEnumerable_##T source)        \
-{                                                                                       \
-	DoublyLinkedList_##T result = new(DoublyLinkedList_##T)();                          \
-	DoublyLinkedNode_##T current = result->_start;                                      \
-	foreach(T, item, source, {                                                          \
-		++result->Count;                                                                \
-		allocinit(DoublyLinkedNode_##T, current->Next) {                                \
-			.Value = item,                                                              \
-			.Next = result->_start,                                                     \
-			.Prev = result->_start->Prev                                                \
-		};                                                                              \
-		current = current->Next;                                                        \
-	});                                                                                 \
-	return result;                                                                      \
 }                                                                                       \
 void DoublyLinkedList_##T##_Destroy(DoublyLinkedList_##T* source)                       \
 {                                                                                       \

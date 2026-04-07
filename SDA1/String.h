@@ -2,15 +2,6 @@
 #define CUBE_STRING
 #include "Defines.h"
 
-#ifndef STRING_ENUMERABLE_DEFINED
-#define STRING_ENUMERABLE_DEFINED
-#include "EnumerableT.h"
-ENUMERABLE_DEFINE(string)
-ENUMERABLE_DEFINE_SELECT(string, string)
-ENUMERABLE_DEFINE_SELECTMANY(string, string)
-ENUMERABLE_DEFINE_AGGREGATE(string, string)
-#endif
-
 /**
  * @brief Represents the empty string.
  * This field is constant.
@@ -38,12 +29,5 @@ int string_Length(string source);
  * @pure
  */
 string string_Concat(string first, string second);
-
-/**
- * @brief Joins the values of a string collection into one string,
- * using the specified separator.
- * @pure
- */
-string string_Join(string separator, IEnumerable_string values);
 
 #endif

@@ -5,10 +5,12 @@
 #include <string.h>
 
 #define THROW(stream) do { fprintf(stream, "INVALID OPERATION! ERROR 404\n"); return; } while (0)
+#define CHECK(ptr) do { if (!ptr) { fprintf(stderr, "ERROR: Failed to allocate %lu bytes of memory for "#ptr"\n", sizeof(*ptr)); exit(1); } } while(0)
 
 Incident new(Incident)(int id, string priority, string description)
 {
 	Incident result = malloc(sizeof(Incident_t));
+	CHECK(result);
 	*result = (Incident_t) {
 		.id = id,
 		.description = new(string)(description)
@@ -21,6 +23,7 @@ Incident new(Incident)(int id, string priority, string description)
 Intervention new(Intervention)(Incident incident, Unit unit)
 {
 	Intervention result = malloc(sizeof(Intervention_t));
+	CHECK(result);
 	*result = (Intervention_t) {
 		.incident = incident,
 		.unit = unit
@@ -32,6 +35,7 @@ Intervention new(Intervention)(Incident incident, Unit unit)
 System new(System)(string input_file_name, string output_file_name)
 {
 	System sys = (System)malloc(sizeof(System_t));
+	CHECK(sys);
 	*sys = (System_t) {
 		.fin = fopen(input_file_name,"rt"),
 		.fout = fopen(output_file_name,"wt"),
@@ -49,6 +53,7 @@ System new(System)(string input_file_name, string output_file_name)
 	fscanf(sys->fin, "%d\n", &unit_count);
 	while (unit_count > 0) {
 		Unit unit = malloc(sizeof(Unit_t));
+		CHECK(unit);
 		fscanf(sys->fin, "%d %c\n", &unit->id, &unit->type);
 		unit->availability = 1;
 		DoublyLinkedList_Unit_Add(sys->units, unit);

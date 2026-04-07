@@ -1,0 +1,14 @@
+# Test folders
+*tests/
+
+# Binaries
+*/bin/
+
+# Checker files
+*/checker.sh
+*/tests/
+
+# Other unnecessary files
+*/.cache/
+*/*.zip
+*/compile_commands.json
