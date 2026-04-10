@@ -1,6 +1,6 @@
 # Compiler setup
 CC:=gcc
-CFLAGS:=-std=gnu23 -Iinclude
+CFLAGS:=-Iinclude
 BIN:=bin
 OUT:=tema1
 
