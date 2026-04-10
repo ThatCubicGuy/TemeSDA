@@ -22,15 +22,15 @@
  */
 #define foreach_return(value) do { __e->Dispose(__e); return value; } while(0)
 
-#define ENUMERABLE_DEFINE(T)                                                                            \
-typedef struct IEnumerator_##T##_s {                                                                    \
-	bool (*MoveNext)(struct IEnumerator_##T##_s* This);                                                 \
-	void (*Reset)(struct IEnumerator_##T##_s* This);                                                    \
-	void (*Dispose)(struct IEnumerator_##T##_s* This);                                                  \
-	T Current;                                                                                          \
-} *IEnumerator_##T;                                                                                     \
-typedef const struct IEnumerable_##T##_s {                                                              \
-	IEnumerator_##T (*GetEnumerator)(const struct IEnumerable_##T##_s* This);                           \
+#define ENUMERABLE_DEFINE(T)                                                    \
+typedef struct IEnumerator_##T##_s {                                            \
+	bool (*MoveNext)(struct IEnumerator_##T##_s* This);                         \
+	void (*Reset)(struct IEnumerator_##T##_s* This);                            \
+	void (*Dispose)(struct IEnumerator_##T##_s* This);                          \
+	T Current;                                                                  \
+} *IEnumerator_##T;                                                             \
+typedef const struct IEnumerable_##T##_s {                                      \
+	IEnumerator_##T (*GetEnumerator)(const struct IEnumerable_##T##_s* This);	\
 } *IEnumerable_##T;
 
 #endif

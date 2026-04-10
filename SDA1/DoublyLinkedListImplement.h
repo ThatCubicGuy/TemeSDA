@@ -91,7 +91,8 @@ void DoublyLinkedList_##T##_Clear(DoublyLinkedList_##T source)                  
 }                                                                                       \
 void DoublyLinkedList_##T##_Insert(DoublyLinkedList_##T source, T item, int index)      \
 {                                                                                       \
-	if (index > source->Count) return;                                                  \
+	index %= source->Count;                                                  			\
+	if (index < 0) index += source->Count;												\
 	source->Count += 1;                                                                 \
 	DoublyLinkedNode_##T current = source->_start;                                      \
 	while (index > 0) {                                                                 \
@@ -101,7 +102,9 @@ void DoublyLinkedList_##T##_Insert(DoublyLinkedList_##T source, T item, int inde
 	DoublyLinkedNode_##T allocinit(DoublyLinkedNode_##T, newNode) {                     \
 		.Value = item,                                                                  \
 		.Next = current->Next,                                                          \
+		.Prev = current,                                                          		\
 	};                                                                                  \
+	current->Next->Prev = newNode;														\
 	current->Next = newNode;                                                            \
 }                                                                                       \
 void DoublyLinkedList_##T##_Destroy(DoublyLinkedList_##T* source)                       \
@@ -110,18 +113,6 @@ void DoublyLinkedList_##T##_Destroy(DoublyLinkedList_##T* source)               
 	free((*source)->_start);                                                            \
 	free(*source);                                                                      \
 	*source = NULL;                                                                     \
-}                                                                                       \
-void DoublyLinkedList_##T##_Sort(DoublyLinkedList_##T source, int (*comparer)(T, T))    \
-{                                                                                       \
-	for (DoublyLinkedNode_##T i = source->_start->Next; i->Next != source->_start; i = i->Next) { \
-		for (DoublyLinkedNode_##T j = i; j != source->_start; j = j->Next) {            \
-			if (comparer(i->Value, j->Value) < 0) {                                     \
-				T tmp = i->Value;                                                       \
-				i->Value = j->Value;                                                    \
-				j->Value = tmp;                                                         \
-			}                                                                           \
-		}                                                                               \
-	}                                                                                   \
 }
 
 #pragma endregion

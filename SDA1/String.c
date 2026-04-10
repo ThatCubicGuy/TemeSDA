@@ -17,6 +17,7 @@ int string_Length(string source)
 string string__ctor(string other)
 {
 	int length = string_Length(other);
+	if (length < 0) return NULL;
 	string result = alloc_array(char, length + 1);
 	// Due to budget cuts, we do not have the budget for CHECK() nor allocinit()
 	// at this point in the source code. Manual nullcheck it is.
