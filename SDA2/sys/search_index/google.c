@@ -1,20 +1,64 @@
 #include "google.h"
+#include "search_index/trie.h"
 
 bool Add(System sys, string id, int score, string keywords[], int keyword_count)
 {
-    List_File_Add(sys->Files, new(File)(id, score, keywords, keyword_count));
-    MWT_Add(sys->SearchTree, sys->Files->Values[sys->Files->Count - 1], );
+    foreach (File f in sys->Files) {
+        if (f->ID == id) return false;
+    }
+    List(string) kws = new(List(string))(keyword_count);
+    for (int i = 0; i < keyword_count; ++i) List_string_Add(kws, keywords[i]);
+    File file = new(File)(id, score, (IEnumerable(string))kws);
+    List_File_Add(sys->Files, file);
+    for (int i = 0; i < keyword_count; ++i) MWT_Add(sys->SearchTree, keywords[i], file);
+    return true;
 }
 
-bool Del(System sys, string id);
+bool Del(System sys, string id)
+{
+    foreach (File f in sys->Files) {
+        if (f->ID == id) {
+            foreach (string kw in f->Keywords) {
+                MWT_Del(sys->SearchTree, kw);
+            }
+            List_File_Remove(sys->Files, f);
+            return true;
+        }
+    }
+    return false;
+}
 
-bool AddKW(System sys, string keyword);
+bool AddKW(System sys, string id, string keyword)
+{
+    File target = NULL;
+    foreach (File f in sys->Files) {
+        if (f->ID == id) {
+            target = f;
+            break;
+        }
+    }
+    if (!target) return false;
+    List_string_Add(target->Keywords, keyword);
+    return true;
+}
 
-bool DelKW(System sys, string keyword);
+bool DelKW(System sys, string id, string keyword)
+{
+    File target = NULL;
+    foreach (File f in sys->Files) {
+        if (f->ID == id) {
+            target = f;
+            break;
+        }
+    }
+    if (!target) return false;
+    List_string_Remove(target->Keywords, keyword);
+    return true;
+}
 
 bool Find(System sys, string keyword);
 
-Heap(File) TopK(System sys, string keyword);
+Heap(File) TopK(System sys, string keyword, int k);
 
 #include "ListImplement.h"
 #include "HeapImplement.h"

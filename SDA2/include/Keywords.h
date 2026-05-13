@@ -102,7 +102,7 @@ bool object_Equals(size_t, object, object);
 #define FOREACH_I(TYPE_VAR, IN)                                                 \
     for(int _once = 1; _once; _once = 0)                                        \
     for(typeof(IN) _src = IN; _once; _once = 0)                                 \
-    for(typeof(_src->GetEnumerator(_src)) _e = _src->GetEnumerator(_src); _once; _once = 0, _e->Dispose(_e))  \
+    for(typeof(_src->GetEnumerator((void*)_src)) _e = _src->GetEnumerator((void*)_src); _once; _once = 0, _e->Dispose(_e))  \
         for(int _loop = 1; _loop < 2 && _e->MoveNext(_e); ++_loop)              \
             for([[maybe_unused]] TYPE_VAR, _type; _loop == 1; _loop *= 2)       \
                 for(TYPE_VAR = (typeof(_type))_e->Current; _loop; _loop = 0)

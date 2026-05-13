@@ -26,7 +26,7 @@ bool Del(System sys, string id);
  * If the file already has the keyword, returns true.
  * @returns True if the file exists, false otherwise.
  */
-bool AddKW(System sys, string keyword);
+bool AddKW(System sys, string id, string keyword);
 
 /**
  * @brief Removes a keyword from a file.
@@ -34,7 +34,7 @@ bool AddKW(System sys, string keyword);
  * If the file does not have the keyword, returns true.
  * @returns True if the file exists, false otherwise.
  */
-bool DelKW(System sys, string keyword);
+bool DelKW(System sys, string id, string keyword);
 
 /**
  * @brief Finds all files that match a keyword.
@@ -46,7 +46,7 @@ bool Find(System sys, string keyword);
 /**
  * @brief @b aaa
  */
-Heap(File) TopK(System sys, string keyword);
+Heap(File) TopK(System sys, string keyword, int k);
 
 
 #endif

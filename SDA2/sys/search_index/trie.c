@@ -37,6 +37,7 @@ bool MWT_Add(MultiWayTree source, string keyword, File file)
     }
     if (!current->FileRefs) current->FileRefs = new(List(File))(8);
     List_File_Add(current->FileRefs, file);
+    return true;
 }
 
 bool MWT_Del(MultiWayTree source, string keyword)
