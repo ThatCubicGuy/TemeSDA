@@ -2,7 +2,7 @@
 
 const string string_Empty = "";
 
-static int StringComparerOrdinal(string left, string right)
+static int StringComparerOrdinalCompare(string left, string right)
 {
     int len = string_Length(left);
     for (int i = 0; i <= len; ++i) {
@@ -10,11 +10,22 @@ static int StringComparerOrdinal(string left, string right)
     }
     return 0;
 }
+static bool StringComparerOrdinalEquals(string left, string right)
+{
+    return StringComparerOrdinalCompare(left, right) == 0;
+}
+static size_t StringComparerOrdinalGetHashCode(string obj)
+{
+    size_t hash = 5381;
+    int c;
+    while((c = *obj++)) hash = ((hash << 5) + hash) + c;
+    return hash;
+}
 static inline char ToLower(char c)
 {
-    return ('A' <= c && c <= 'Z') ? c + ('a' - 'A') : c;
+    return ('A' <= c && c <= 'Z') ? c - ('A' - 'a') : c;
 }
-static int StringComparerOrdinalIgnoreCase(string left, string right)
+static int StringComparerOrdinalIgnoreCaseCompare(string left, string right)
 {
     int len = string_Length(left);
     for (int i = 0; i <= len; ++i) {
@@ -24,10 +35,29 @@ static int StringComparerOrdinalIgnoreCase(string left, string right)
     }
     return 0;
 }
+static bool StringComparerOrdinalIgnoreCaseEquals(string left, string right)
+{
+    return StringComparerOrdinalIgnoreCaseCompare(left, right) == 0;
+}
+static size_t StringComparerOrdinalIgnoreCaseGetHashCode(string obj)
+{
+    size_t hash = 5381;
+    int c;
+    while((c = ToLower(*obj++))) hash = ((hash << 5) + hash) + c;
+    return hash;
+}
 
-const struct StringComparer_s StringComparer = {
-    .Ordinal = StringComparerOrdinal,
-    .OrdinalIgnoreCase = StringComparerOrdinalIgnoreCase
+const struct StaticStringComparer_s StringComparer = {
+    .Ordinal = (struct StringComparer_s) {
+        .Compare = StringComparerOrdinalCompare,
+        .Equals = StringComparerOrdinalEquals,
+        .GetHashCode = StringComparerOrdinalGetHashCode
+    },
+    .OrdinalIgnoreCase = (struct StringComparer_s) {
+        .Compare = StringComparerOrdinalIgnoreCaseCompare,
+        .Equals = StringComparerOrdinalIgnoreCaseEquals,
+        .GetHashCode = StringComparerOrdinalIgnoreCaseGetHashCode
+    }
 };
 
 unsigned long string_HashCode(string source)

@@ -8,9 +8,21 @@
  */
 extern const string string_Empty;
 
-extern const struct StringComparer_s {
-    ValueComparer(string) Ordinal;
-    ValueComparer(string) OrdinalIgnoreCase;
+EQUALITY_COMPARER_DEFINE(string)
+COMPARER_DEFINE(string)
+struct StringComparer_s {
+    union {
+        struct tag_IComparer_string Comparer[1];
+        struct tag_IComparer_string;
+    };
+    union {
+        struct tag_IEqualityComparer_string EqualityComparer[1];
+        struct tag_IEqualityComparer_string;
+    };
+};
+extern const struct StaticStringComparer_s {
+    struct StringComparer_s Ordinal;
+    struct StringComparer_s OrdinalIgnoreCase;
 } StringComparer;
 
 /**

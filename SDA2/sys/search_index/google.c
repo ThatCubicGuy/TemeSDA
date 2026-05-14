@@ -9,8 +9,8 @@ bool Add(System sys, string id, int score, string keywords[], int keyword_count)
     List(string) kws = new(List(string))(keyword_count);
     for (int i = 0; i < keyword_count; ++i) List_string_Add(kws, keywords[i]);
     File file = new(File)(id, score, (IEnumerable(string))kws);
-    List_File_Add(sys->Files, file);
-    for (int i = 0; i < keyword_count; ++i) MWT_Add(sys->SearchTree, keywords[i], file);
+    HashSet_File_Add(sys->Files, file);
+    for (int i = 0; i < keyword_count; ++i) MWT_Add(sys->RetrievalTree, keywords[i], file);
     return true;
 }
 
@@ -19,9 +19,9 @@ bool Del(System sys, string id)
     foreach (File f in sys->Files) {
         if (f->ID == id) {
             foreach (string kw in f->Keywords) {
-                MWT_Del(sys->SearchTree, kw);
+                MWT_Del(sys->RetrievalTree, kw, f);
             }
-            List_File_Remove(sys->Files, f);
+            HashSet_File_Remove(sys->Files, f);
             return true;
         }
     }
@@ -38,7 +38,7 @@ bool AddKW(System sys, string id, string keyword)
         }
     }
     if (!target) return false;
-    List_string_Add(target->Keywords, keyword);
+    HashSet_string_Add(target->Keywords, keyword);
     return true;
 }
 
@@ -52,7 +52,7 @@ bool DelKW(System sys, string id, string keyword)
         }
     }
     if (!target) return false;
-    List_string_Remove(target->Keywords, keyword);
+    HashSet_string_Remove(target->Keywords, keyword);
     return true;
 }
 
@@ -60,8 +60,10 @@ bool Find(System sys, string keyword);
 
 Heap(File) TopK(System sys, string keyword, int k);
 
+#include "HashSetImplement.h"
 #include "ListImplement.h"
 #include "HeapImplement.h"
 
+HASH_SET_IMPLEMENT(File)
 LIST_IMPLEMENT(File)
 HEAP_IMPLEMENT(File)

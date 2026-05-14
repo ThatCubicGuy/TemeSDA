@@ -1,4 +1,5 @@
 #include "System.h"
+#include "Keywords.h"
 #define b(PTR) ((byte*)PTR)
 
 bool object_Equals(size_t size, object left, object right)
@@ -8,4 +9,18 @@ bool object_Equals(size_t size, object left, object right)
     }
 
     return true;
+}
+
+bool object_ReferenceEquals(object left, object right)
+{
+    return left == right;
+}
+
+size_t object_GetHashCode(object obj)
+{
+    return (((size_t)obj & 0xFF) * 1 +
+            ((size_t)obj & 0xFF00) * 3821 +
+            ((size_t)obj & 0xFF0000) * 52147 +
+            ((size_t)obj & 0xFF000000) * 300463)
+        * 1047997;
 }

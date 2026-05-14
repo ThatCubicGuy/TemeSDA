@@ -3,7 +3,7 @@
 
 #define LIST_IMPLEMENT(T)                                                                       \
 typedef struct ListEnumerator_##T##_s {                                                         \
-    typeof(*(IEnumerator(T))0) _parent;                                                         \
+    struct tag_IEnumerator_##T _parent;                                                         \
     int _currentIndex;                                                                          \
     List(T) _list;                                                                              \
 } *ListEnumerator_##T;                                                                          \

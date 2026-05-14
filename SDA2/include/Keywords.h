@@ -63,9 +63,32 @@ void _memfree(void* location);
 
 #pragma endregion
 
-bool object_Equals(size_t, object, object);
+#pragma region Base equality
 
+#define IEqualityComparer(T) _IEqualityComparer_##T
+#define EQUALITY_COMPARER_DEFINE(T)         \
+typedef struct tag_IEqualityComparer_##T {  \
+    bool (*Equals)(T, T);                   \
+    size_t (*GetHashCode)(T);               \
+} *IEqualityComparer(T);
+
+#define IComparer(T) _IComparer_##T
+#define COMPARER_DEFINE(T)          \
+typedef struct tag_IComparer_##T {  \
+    int (*Compare)(T, T);           \
+} *IComparer(T);
+
+bool object_Equals(size_t, object, object);
+bool object_ReferenceEquals(object, object);
+size_t object_GetHashCode(object obj);
+EQUALITY_COMPARER_DEFINE(object);
+const struct tag_IEqualityComparer_object ObjectEquator[1] = {{
+    .Equals = object_ReferenceEquals,
+    .GetHashCode = object_GetHashCode
+}};
 #define equals(LEFT, RIGHT) (sizeof(typeof(LEFT)) == sizeof(typeof(RIGHT)) && object_Equals(sizeof(typeof(LEFT)), &LEFT, &RIGHT))
+
+#pragma endregion
 
 #define NEW_I(TYPE) TYPE##__ctor
 #define new(TYPE) NEW_I(TYPE)

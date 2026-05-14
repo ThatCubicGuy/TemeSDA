@@ -3,8 +3,8 @@
 #include "trie.h"
 
 typedef struct {
-    List(File) Files;
-    MultiWayTree SearchTree;
+    HashSet(File) Files;
+    MultiWayTree RetrievalTree;
 } System[1];
 
 /**
@@ -44,7 +44,7 @@ bool DelKW(System sys, string id, string keyword);
 bool Find(System sys, string keyword);
 
 /**
- * @brief @b aaa
+ * @brief Finds the top 5 dog
  */
 Heap(File) TopK(System sys, string keyword, int k);
 
