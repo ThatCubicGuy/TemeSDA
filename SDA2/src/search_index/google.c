@@ -1,5 +1,5 @@
 #include "google.h"
-#include "search_index/trie.h"
+#include "retree.h"
 
 bool Add(System sys, string id, int score, string keywords[], int keyword_count)
 {
@@ -11,7 +11,7 @@ bool Add(System sys, string id, int score, string keywords[], int keyword_count)
     File file = new(File)(id, score, (IEnumerable(string))kws);
     List_string_Destroy(&kws);
     DoublyLinkedList_File_Add(sys->Files, file);
-    for (int i = 0; i < keyword_count; ++i) MWT_Add(sys->RetrievalTree, keywords[i], file);
+    for (int i = 0; i < keyword_count; ++i) RT_Add(sys->Keywords, keywords[i], file);
     return true;
 }
 
@@ -20,7 +20,7 @@ bool Del(System sys, string id)
     foreach (File f in sys->Files) {
         if (f->ID == id) {
             foreach (string kw in f->Keywords) {
-                MWT_Del(sys->RetrievalTree, kw, f);
+                RT_Del(sys->Keywords, kw, f);
             }
             DoublyLinkedList_File_Remove(sys->Files, f);
             return true;

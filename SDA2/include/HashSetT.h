@@ -5,6 +5,7 @@
 
 #pragma region Define
 
+#define MAX_HASH_SET_ARRAY_LENGTH 64
 #define HASH_SET_DEFINE(T)                                          \
 typedef struct tag_HashSetEntry_##T *HashSetEntry_##T;              \
 typedef struct tag_HashSet_##T {                                    \
@@ -14,7 +15,7 @@ typedef struct tag_HashSet_##T {                                    \
     };                                                              \
     int Count;                                                      \
     IEqualityComparer(T) Comparer;                                  \
-    HashSetEntry_##T Values[64];                                    \
+    HashSetEntry_##T Values[MAX_HASH_SET_ARRAY_LENGTH];             \
 } *HashSet(T);                                                      \
 /**                                                                 \
  * @brief Creates a new HashSet with the given capacity.            \

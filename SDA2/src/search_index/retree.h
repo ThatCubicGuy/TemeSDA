@@ -22,20 +22,20 @@ HASH_SET_DEFINE(File)
 LIST_DEFINE(File)
 HEAP_DEFINE(File)
 
-typedef struct mwt_s *MultiWayTree;
+typedef struct mwt_s *RetrievalTree;
 struct mwt_s {
     HashSet(File) FileRefs;
-    MultiWayTree Children[26];
+    RetrievalTree Children[26];
 };
 
-MultiWayTree MultiWayTree__ctor();
+void RT_Add(RetrievalTree source, string keyword, File file);
 
-bool MWT_Add(MultiWayTree source, string keyword, File file);
+void RT_Del(RetrievalTree source, string keyword, File file);
 
-bool MWT_Del(MultiWayTree source, string keyword, File file);
+IEnumerable(File) RT_GetRefs(RetrievalTree source, string keyword);
 
-IEnumerable(File) MWT_GetRefs(MultiWayTree source, string keyword);
+Heap(File) RT_GetPrefix(RetrievalTree source, string prefix);
 
-Heap(File) MWT_GetPrefix(MultiWayTree source, string prefix);
+void RT_Destroy(RetrievalTree *source);
 
 #endif

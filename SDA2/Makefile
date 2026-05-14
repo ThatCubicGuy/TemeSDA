@@ -68,9 +68,9 @@ reset:
 	rm -rf ${BIN} ${OBJ}
 
 debug:
-	@echo -e "\033[35mUniversal dependencies:\033[35m${LIBOBJECTS:%=\n    %}\033[0m"
+	@echo -e "\033[35mUniversal dependencies:\033[35m${LIBOBJECTS:%=\n    %}\033[0m\n"
 	@echo -e "\033[36mObject files:\033[33m${OBJECTS:%=\n    %}\033[0m"
-	@echo -e "$(foreach ex,${EXES},$(patsubst %,\n\033[32m%,$(filter ${ex:${BIN}/%.exe=${OBJ}/%}%,${OBJECTS}))\033[33m\n  └──> \033[31m${ex}\033[0m)"
+	@echo -e "$(foreach ex,${EXES},\n\033[32m${ex}\033[0m$(patsubst %,\033[33m\n  └──> \033[31m%\033[0m,$(filter ${ex:${BIN}/%.exe=${OBJ}/%}%,${OBJECTS})))"
 
 cc:
 	${CC} --version

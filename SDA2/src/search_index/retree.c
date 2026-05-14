@@ -1,5 +1,5 @@
 #include "Keywords.h"
-#include "trie.h"
+#include "retree.h"
 #include "System/String.h"
 
 struct tag_IEqualityComparer_File FileComparer[1] = {(struct tag_IEqualityComparer_File) {
@@ -23,50 +23,43 @@ File File__ctor(string id, int score, IEnumerable(string) keywords)
     return result;
 }
 
-MultiWayTree MultiWayTree__ctor()
+void RT_Add(RetrievalTree source, string keyword, File file)
 {
-    return memalloc(MultiWayTree);
-}
-
-bool MWT_Add(MultiWayTree source, string keyword, File file)
-{
-    if (!keyword || !file) return false;
-    MultiWayTree current = source;
+    if (!keyword || !file) throw(new(Exception)("Keyword or file is null (RT_Add)"));
+    RetrievalTree current = source;
     for (int i = 0; keyword[i]; ++i) {
         if (!current->Children[idx(keyword[i])]) {
-            current->Children[idx(keyword[i])] = memalloc(MultiWayTree);
+            current->Children[idx(keyword[i])] = memalloc(RetrievalTree);
         }
         current = current->Children[idx(keyword[i])];
-    }
-    if (!current->FileRefs) current->FileRefs = new(HashSet(File))(FileComparer);
-    if (HashSet_File_Contains(current->FileRefs, file)) {
-        return false;
     }
     HashSet_File_Add(current->FileRefs, file);
-    return true;
 }
 
-bool MWT_Del(MultiWayTree source, string keyword, File file)
+void RT_Del(RetrievalTree source, string keyword, File file)
 {
-    if (!keyword || !file) return false;
-    MultiWayTree current = source;
+    if (!keyword || !file) throw(new(Exception)("Keyword or file is null (RT_Del)"));
+    RetrievalTree current = source;
     for (int i = 0; keyword[i]; ++i) {
-        if (!current->Children[idx(keyword[i])]) {
-            current->Children[idx(keyword[i])] = memalloc(MultiWayTree);
-        }
+        if (!current->Children[idx(keyword[i])]) throw(new(Exception)("Keyword does not exist (RT_Del)"));
         current = current->Children[idx(keyword[i])];
     }
-    if (!current->FileRefs) return false;
-    return HashSet_File_Remove(current->FileRefs, file);
+    if (!current->FileRefs) throw(new(Exception)("Keyword is incomplete (RT_Del)"));
+    HashSet_File_Remove(current->FileRefs, file);
+    // Removing the keyword is simple! Just erase its hash set.
+    if (current->FileRefs->Count == 0) {
+        HashSet_File_Destroy(&current->FileRefs);
+    }
+    // Proper container freeing will be done upon system destruction.
 }
 
-IEnumerable(File) MWT_GetRefs(MultiWayTree source, string keyword)
+IEnumerable(File) RT_GetRefs(RetrievalTree source, string keyword)
 {
-    if (!keyword) return false;
-    MultiWayTree current = source;
+    if (!keyword) throw(new(Exception)("Keyword is null (RT_GetRefs)"));
+    RetrievalTree current = source;
     for (int i = 0; keyword[i]; ++i) {
         if (!current->Children[idx(keyword[i])]) {
-            current->Children[idx(keyword[i])] = memalloc(MultiWayTree);
+            current->Children[idx(keyword[i])] = memalloc(RetrievalTree);
         }
         current = current->Children[idx(keyword[i])];
     }
@@ -74,7 +67,7 @@ IEnumerable(File) MWT_GetRefs(MultiWayTree source, string keyword)
     return (IEnumerable(File))current->FileRefs;
 }
 
-void FindFiles(MultiWayTree source, Heap(File) result)
+static void FindFiles(RetrievalTree source, Heap(File) result)
 {
     if (!source) return;
     if (source->FileRefs) {
@@ -87,23 +80,39 @@ void FindFiles(MultiWayTree source, Heap(File) result)
     }
 }
 
-int HighestScore(File left, File right)
+static int HighestScore(File left, File right)
 {
     // Higher scores will be placed first because Heap<T> implements a minheap
     return right->Score - left->Score;
 }
 
-Heap(File) MWT_GetPrefix(MultiWayTree source, string prefix)
+Heap(File) RT_GetPrefix(RetrievalTree source, string prefix)
 {
     if (!prefix) return false;
-    MultiWayTree current = source;
+    RetrievalTree current = source;
     for (int i = 0; prefix[i]; ++i) {
         if (!current->Children[idx(prefix[i])]) {
-            current->Children[idx(prefix[i])] = memalloc(MultiWayTree);
+            current->Children[idx(prefix[i])] = memalloc(RetrievalTree);
         }
         current = current->Children[idx(prefix[i])];
     }
+    // Quaternary heaps are generally just better than binary or ternary heaps
     Heap(File) result = new(Heap(File))(16, 4, HighestScore);
     FindFiles(current, result);
     return result;
+}
+
+void RemoveNodes(RetrievalTree start)
+{
+    if (!start) return;
+    for (int i = 0; i < 26; ++i) {
+        RemoveNodes(start->Children[i]);
+    }
+    memfree(start);
+}
+
+void RT_Destroy(RetrievalTree *source)
+{
+    RemoveNodes(*source);
+    *source = NULL;
 }

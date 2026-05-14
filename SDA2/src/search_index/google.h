@@ -1,11 +1,11 @@
 #ifndef GOOGLE
 #define GOOGLE
-#include "trie.h"
+#include "retree.h"
 #include "DoublyLinkedListT.h"
 DOUBLY_LINKED_LIST_DEFINE(File)
 typedef struct tag_System {
     DoublyLinkedList(File) Files;
-    MultiWayTree RetrievalTree;
+    RetrievalTree Keywords;
 } System[1];
 
 /**
@@ -31,8 +31,7 @@ bool AddKW(System sys, string id, string keyword);
 
 /**
  * @brief Removes a keyword from a file.
- * If the file does not exist, fails.
- * If the file does not have the keyword, returns true.
+ * Fails if the file does not exist.
  * @returns True if the file exists, false otherwise.
  */
 bool DelKW(System sys, string id, string keyword);
@@ -45,9 +44,8 @@ bool DelKW(System sys, string id, string keyword);
 bool Find(System sys, string keyword);
 
 /**
- * @brief Finds the top 5 dog
+ * @brief Finds the top k words associated with a keyword
  */
 Heap(File) TopK(System sys, string keyword, int k);
-
 
 #endif
