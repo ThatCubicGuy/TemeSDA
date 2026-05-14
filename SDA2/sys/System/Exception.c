@@ -9,9 +9,9 @@ jmp_buf _finally_return_longjmp_buf = default(jmp_buf);
 
 Exception Exception__ctor(string msg)
 {
-    Exception result = malloc(sizeof(struct _Exception));
+    Exception result = malloc(sizeof(struct tag_Exception));
     if (!result) {
-        fprintf(stderr, "Error generating exception object of size %zu\n", sizeof(struct _Exception));
+        fprintf(stderr, "Error generating exception object of size %zu\n", sizeof(struct tag_Exception));
         exit(EXIT_OUTOFMEMORY);
     }
     result->Message = new(string)(msg);
@@ -21,10 +21,10 @@ Exception Exception__ctor(string msg)
 OutOfMemoryException OutOfMemoryException__ctor(string msg, size_t size)
 {
     OutOfMemoryException result = (OutOfMemoryException)new(Exception)(string_Format(msg, size));
-    result = realloc(result, sizeof(struct _OutOfMemoryException));
+    result = realloc(result, sizeof(struct tag_OutOfMemoryException));
     // Can't really throw exceptions inside an exception constructor...
     if (!result) {
-        fprintf(stderr, "Error generating exception object of size %zu\n", sizeof(struct _OutOfMemoryException));
+        fprintf(stderr, "Error generating exception object of size %zu\n", sizeof(struct tag_OutOfMemoryException));
         exit(EXIT_OUTOFMEMORY);
     }
     result->BlockSize = size;

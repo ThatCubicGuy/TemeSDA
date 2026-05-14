@@ -34,8 +34,8 @@ bool MWT_Add(MultiWayTree source, string keyword, File file);
 
 bool MWT_Del(MultiWayTree source, string keyword, File file);
 
-List(File) MWT_GetRefs(MultiWayTree source, string keyword);
+IEnumerable(File) MWT_GetRefs(MultiWayTree source, string keyword);
 
-List(File) MWT_GetPrefix(MultiWayTree source, string prefix);
+IEnumerable(File) MWT_GetPrefix(MultiWayTree source, string prefix);
 
 #endif

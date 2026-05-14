@@ -18,7 +18,7 @@ File File__ctor(string id, int score, IEnumerable(string) keywords)
     return result;
 }
 
-const struct tag_IEqualityComparer_File FileComparer[1] = {(struct tag_IEqualityComparer_File) {
+struct tag_IEqualityComparer_File FileComparer[1] = {(struct tag_IEqualityComparer_File) {
     .Equals = (bool(*)(File,File))object_ReferenceEquals,
     .GetHashCode = (size_t(*)(File))object_GetHashCode,
 }};
@@ -30,6 +30,7 @@ MultiWayTree MultiWayTree__ctor()
 
 bool MWT_Add(MultiWayTree source, string keyword, File file)
 {
+    if (!keyword || !file) return false;
     MultiWayTree current = source;
     for (int i = 0; keyword[i]; ++i) {
         if (!current->Children[idx(keyword[i])]) {
@@ -38,7 +39,7 @@ bool MWT_Add(MultiWayTree source, string keyword, File file)
         current = current->Children[idx(keyword[i])];
     }
     if (!current->FileRefs) current->FileRefs = new(HashSet(File))(FileComparer);
-    if (Enumerable_File_Contains((IEnumerable(File))current->FileRefs, file)) {
+    if (HashSet_File_Contains(current->FileRefs, file)) {
         return false;
     }
     HashSet_File_Add(current->FileRefs, file);
@@ -47,16 +48,62 @@ bool MWT_Add(MultiWayTree source, string keyword, File file)
 
 bool MWT_Del(MultiWayTree source, string keyword, File file)
 {
+    if (!keyword || !file) return false;
     MultiWayTree current = source;
-
+    for (int i = 0; keyword[i]; ++i) {
+        if (!current->Children[idx(keyword[i])]) {
+            current->Children[idx(keyword[i])] = memalloc(MultiWayTree);
+        }
+        current = current->Children[idx(keyword[i])];
+    }
+    if (!current->FileRefs) return false;
+    return HashSet_File_Remove(current->FileRefs, file);
 }
 
-List(File) MWT_GetRefs(MultiWayTree source, string keyword)
+IEnumerable(File) MWT_GetRefs(MultiWayTree source, string keyword)
 {
-
+    if (!keyword) return false;
+    MultiWayTree current = source;
+    for (int i = 0; keyword[i]; ++i) {
+        if (!current->Children[idx(keyword[i])]) {
+            current->Children[idx(keyword[i])] = memalloc(MultiWayTree);
+        }
+        current = current->Children[idx(keyword[i])];
+    }
+    if (!current->FileRefs) return NULL;
+    return (IEnumerable(File))current->FileRefs;
 }
 
-List(File) MWT_GetPrefix(MultiWayTree source, string prefix)
+void FindFiles(MultiWayTree source, List(File) result)
 {
+    if (!source) return;
+    if (source->FileRefs) {
+        foreach (File f in source->FileRefs) {
+            List_File_Add(result, f);
+        }
+    }
+    for (int i = 0; i < 26; ++i) {
+        FindFiles(source->Children[i], result);
+    }
+}
 
+int SortByScore(File left, File right)
+{
+    return left->Score - right->Score;
+}
+
+IEnumerable(File) MWT_GetPrefix(MultiWayTree source, string prefix)
+{
+    if (!prefix) return false;
+    MultiWayTree current = source;
+    for (int i = 0; prefix[i]; ++i) {
+        if (!current->Children[idx(prefix[i])]) {
+            current->Children[idx(prefix[i])] = memalloc(MultiWayTree);
+        }
+        current = current->Children[idx(prefix[i])];
+    }
+    List(File) result = new(List(File))(16);
+    FindFiles(current, result);
+    List_File_Sort(result, SortByScore);
+    return (IEnumerable(File))result;
 }

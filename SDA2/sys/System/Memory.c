@@ -1,29 +1,31 @@
 #include "Keywords.h"
 #include "System.h"
 
-void* _last_alloc = NULL;
+void* last_alloc = NULL;
 
-void* _memalloc(size_t size)
+void* memalloc_(size_t size)
 {
-    // Special functionality of _memalloc - return last allocation if size is 0
-    if (size == 0) return _last_alloc;
-    _last_alloc = malloc(size);
-    return _last_alloc ? _last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size)), NULL);
+    // Special functionality of memalloc_ - return last allocation if size is 0
+    if (size == 0) return last_alloc;
+    last_alloc = malloc(size);
+    return last_alloc ? last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size)), NULL);
 }
 
-void* _zeroalloc(size_t size)
+void* zeroalloc_(size_t size)
 {
-    _last_alloc = calloc(1, size);
-    return _last_alloc ? _last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size)), NULL);
+    if (size == 0) throw(new(Exception)("Cannot allocate block of size 0!"));
+    last_alloc = calloc(1, size);
+    return last_alloc ? last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size)), NULL);
 }
 
-void* _memresize(void* object, size_t new_size)
+void* memresize_(void* object, size_t new_size)
 {
-    _last_alloc = realloc(object, new_size);
-    return _last_alloc ? _last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", new_size)), NULL);
+    if (new_size == 0) throw(new(Exception)("Cannot allocate block of size 0!"));
+    last_alloc = realloc(object, new_size);
+    return last_alloc ? last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", new_size)), NULL);
 }
 
-void _memfree(void* object)
+void memfree_(void* object)
 {
     free(object);
 }

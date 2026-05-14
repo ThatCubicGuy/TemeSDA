@@ -13,12 +13,12 @@ typedef unsigned char byte;
 
 #pragma region Exceptions
 
-typedef struct _Exception {
+typedef struct tag_Exception {
     string Message;
 } *Exception;
 
-typedef struct _OutOfMemoryException {
-    struct _Exception;
+typedef struct tag_OutOfMemoryException {
+    struct tag_Exception;
     size_t BlockSize;
 } *OutOfMemoryException;
 
@@ -48,16 +48,16 @@ extern int StackTrace_Finally(enum StackTraceOperation op);
 
 #pragma region Memory
 
-void* _memalloc(size_t block_size);
-void* _zeroalloc(size_t block_size);
-void* _memresize(void* old_location, size_t new_size);
-void _memfree(void* location);
+void* memalloc_(size_t block_size);
+void* zeroalloc_(size_t block_size);
+void* memresize_(void* old_location, size_t new_size);
+void memfree_(void* location);
 
-#define memalloc(CLASS) ((CLASS)_memalloc(sizeof(*(CLASS)0)))
-#define arralloc(ARR_TYPE, LEN) ((typeof(ARR_TYPE)*)_zeroalloc(sizeof(ARR_TYPE) * LEN))
-#define memresize(ARR, NEWLEN) ((typeof(ARR))_memresize(ARR, sizeof(*(ARR)) * NEWLEN))
-#define boxalloc(STRUCT) ((typeof(STRUCT)*)_memalloc(sizeof(STRUCT)))
-#define memfree(PTR) _memfree(PTR);
+#define memalloc(CLASS) ((CLASS)memalloc_(sizeof(*(CLASS)0)))
+#define arralloc(ARR_TYPE, LEN) ((typeof(ARR_TYPE)*)zeroalloc_(sizeof(ARR_TYPE) * LEN))
+#define memresize(ARR, NEWLEN) ((typeof(ARR))memresize_(ARR, sizeof(*(ARR)) * NEWLEN))
+#define boxalloc(STRUCT) ((typeof(STRUCT)*)memalloc_(sizeof(STRUCT)))
+#define memfree(PTR) memfree_(PTR);
 
 #define init(CLASS) (typeof(*(CLASS)0))
 
