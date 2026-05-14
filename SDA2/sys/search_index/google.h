@@ -1,9 +1,10 @@
 #ifndef GOOGLE
 #define GOOGLE
 #include "trie.h"
-
-typedef struct {
-    HashSet(File) Files;
+#include "DoublyLinkedListT.h"
+DOUBLY_LINKED_LIST_DEFINE(File)
+typedef struct tag_System {
+    DoublyLinkedList(File) Files;
     MultiWayTree RetrievalTree;
 } System[1];
 

@@ -9,7 +9,8 @@ bool Add(System sys, string id, int score, string keywords[], int keyword_count)
     List(string) kws = new(List(string))(keyword_count);
     for (int i = 0; i < keyword_count; ++i) List_string_Add(kws, keywords[i]);
     File file = new(File)(id, score, (IEnumerable(string))kws);
-    HashSet_File_Add(sys->Files, file);
+    List_string_Destroy(&kws);
+    DoublyLinkedList_File_Add(sys->Files, file);
     for (int i = 0; i < keyword_count; ++i) MWT_Add(sys->RetrievalTree, keywords[i], file);
     return true;
 }
@@ -21,7 +22,7 @@ bool Del(System sys, string id)
             foreach (string kw in f->Keywords) {
                 MWT_Del(sys->RetrievalTree, kw, f);
             }
-            HashSet_File_Remove(sys->Files, f);
+            DoublyLinkedList_File_Remove(sys->Files, f);
             return true;
         }
     }

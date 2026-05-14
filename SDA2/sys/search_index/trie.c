@@ -2,6 +2,11 @@
 #include "trie.h"
 #include "System/String.h"
 
+struct tag_IEqualityComparer_File FileComparer[1] = {(struct tag_IEqualityComparer_File) {
+    .Equals = (bool(*)(File,File))object_ReferenceEquals,
+    .GetHashCode = (size_t(*)(File))object_GetHashCode,
+}};
+
 static inline int idx(char c)
 {
     return ('A' <= c && c <= 'Z') ? c - 'A' : c - 'a';
@@ -17,11 +22,6 @@ File File__ctor(string id, int score, IEnumerable(string) keywords)
     };
     return result;
 }
-
-struct tag_IEqualityComparer_File FileComparer[1] = {(struct tag_IEqualityComparer_File) {
-    .Equals = (bool(*)(File,File))object_ReferenceEquals,
-    .GetHashCode = (size_t(*)(File))object_GetHashCode,
-}};
 
 MultiWayTree MultiWayTree__ctor()
 {
@@ -74,12 +74,12 @@ IEnumerable(File) MWT_GetRefs(MultiWayTree source, string keyword)
     return (IEnumerable(File))current->FileRefs;
 }
 
-void FindFiles(MultiWayTree source, List(File) result)
+void FindFiles(MultiWayTree source, Heap(File) result)
 {
     if (!source) return;
     if (source->FileRefs) {
         foreach (File f in source->FileRefs) {
-            List_File_Add(result, f);
+            Heap_File_Push(result, f);
         }
     }
     for (int i = 0; i < 26; ++i) {
@@ -87,12 +87,13 @@ void FindFiles(MultiWayTree source, List(File) result)
     }
 }
 
-int SortByScore(File left, File right)
+int HighestScore(File left, File right)
 {
-    return left->Score - right->Score;
+    // Higher scores will be placed first because Heap<T> implements a minheap
+    return right->Score - left->Score;
 }
 
-IEnumerable(File) MWT_GetPrefix(MultiWayTree source, string prefix)
+Heap(File) MWT_GetPrefix(MultiWayTree source, string prefix)
 {
     if (!prefix) return false;
     MultiWayTree current = source;
@@ -102,8 +103,7 @@ IEnumerable(File) MWT_GetPrefix(MultiWayTree source, string prefix)
         }
         current = current->Children[idx(prefix[i])];
     }
-    List(File) result = new(List(File))(16);
+    Heap(File) result = new(Heap(File))(16, 4, HighestScore);
     FindFiles(current, result);
-    List_File_Sort(result, SortByScore);
-    return (IEnumerable(File))result;
+    return result;
 }

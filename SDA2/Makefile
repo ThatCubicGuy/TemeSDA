@@ -26,8 +26,8 @@ EXES:=${OBJFOLDERS:${OBJ}/%=${BIN}/%.exe} $(patsubst ${SRC}/%.c,${BIN}/%.exe,$(w
 
 # Compiler setup
 CC:=gcc
-CWARNS:=all extra no-dangling-else #required because of one of my macros :moai:
-CFLAGS:=${CWARNS:%=-W%} -I${HDR} -I${LIB} -include${HDR}/Keywords.h -include${LIB}/System/String.h -std=c17 -fms-extensions -Wno-microsoft-anon-tag
+CWARNS:=all extra no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
+CFLAGS:=${CWARNS:%=-W%} -I${HDR} -I${LIB} -include${HDR}/Keywords.h -include${LIB}/System/String.h -std=c17 -fms-extensions
 
 all: ${EXES}
 
