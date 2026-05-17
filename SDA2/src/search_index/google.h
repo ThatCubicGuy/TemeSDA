@@ -40,20 +40,24 @@ bool AddKW(System sys, string id, string keyword);
 bool DelKW(System sys, string id, string keyword);
 
 /**
- * @brief Finds all files that match a keyword.
+ * @brief Prints all files that match a keyword.
  * The results are sorted alphabetically.
- * @returns True if the file exists, false otherwise.
  */
-Heap(File) Find(System sys, string keyword);
+void Find(System sys, string keyword);
 
 /**
- * @brief Finds the top k words associated with a keyword
+ * @brief Prints the top k words associated with a keyword.
  */
-Heap(File) TopK(System sys, string keyword);
+void TopK(System sys, string keyword, int count);
 
 /**
  * @brief Prints everything in the retrieval tree.
  */
 void Print(System sys);
+
+/**
+ * @brief Prints all files that match a prefix.
+ */
+void Prefix(System sys, string prefix);
 
 #endif

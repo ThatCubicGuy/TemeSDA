@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_GENERIC_DOUBLY_LINKED_LIST
 #define COLLECTIONS_GENERIC_DOUBLY_LINKED_LIST
-
+#include "Keywords.h"
 #define DoublyLinkedList(T) CAT(DoublyLinkedList_,T)
 
 #define DOUBLY_LINKED_LIST_DEFINE(T)                                        \

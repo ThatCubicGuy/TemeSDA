@@ -1,9 +1,11 @@
+#include "Keywords.h"
 #include "String.h"
 
 const string string_Empty = "";
 
 static int StringComparerOrdinalCompare(string left, string right)
 {
+    if (left == NULL || right == NULL) return left - right;
     int len = string_Length(left);
     for (int i = 0; i <= len; ++i) {
         if (left[i] != right[i]) return left[i] - right[i];
@@ -27,6 +29,7 @@ static inline char ToLower(char c)
 }
 static int StringComparerOrdinalIgnoreCaseCompare(string left, string right)
 {
+    if (left == NULL || right == NULL) return left - right;
     int len = string_Length(left);
     for (int i = 0; i <= len; ++i) {
         if (ToLower(left[i]) != ToLower(right[i])) {
@@ -47,28 +50,26 @@ static size_t StringComparerOrdinalIgnoreCaseGetHashCode(string obj)
     return hash;
 }
 
-const struct StaticStringComparer_s StringComparer = {
-    .Ordinal = (struct StringComparer_s) {
-        .Compare = StringComparerOrdinalCompare,
-        .Equals = StringComparerOrdinalEquals,
-        .GetHashCode = StringComparerOrdinalGetHashCode
+const TAG(StringComparerStatic) StringComparer = {
+    .Ordinal = (TAG(StringComparer)) {
+        .Comparer = {{
+            .Compare = StringComparerOrdinalCompare,
+        }},
+        .EqualityComparer = {{
+            .Equals = StringComparerOrdinalEquals,
+            .GetHashCode = StringComparerOrdinalGetHashCode
+        }}
     },
-    .OrdinalIgnoreCase = (struct StringComparer_s) {
-        .Compare = StringComparerOrdinalIgnoreCaseCompare,
-        .Equals = StringComparerOrdinalIgnoreCaseEquals,
-        .GetHashCode = StringComparerOrdinalIgnoreCaseGetHashCode
+    .OrdinalIgnoreCase = (TAG(StringComparer)) {
+        .Comparer = {{
+            .Compare = StringComparerOrdinalIgnoreCaseCompare,
+        }},
+        .EqualityComparer = {{
+            .Equals = StringComparerOrdinalIgnoreCaseEquals,
+            .GetHashCode = StringComparerOrdinalIgnoreCaseGetHashCode
+        }}
     }
 };
-
-unsigned long string_HashCode(string source)
-{
-    unsigned long hashCode = 5381;
-    int c = source[0];
-    while ((c = *(source++))) {
-        hashCode = ((hashCode << 5) + hashCode) + c;
-    }
-    return hashCode;
-}
 
 int string_Length(string source)
 {
@@ -89,15 +90,6 @@ string string__ctor(string other)
     }
     ((char*)result)[length] = 0;
     return result;
-}
-
-int string_Compare(string left, string right)
-{
-    int len = string_Length(left);
-    for (int i = 0; i <= len; ++i) {
-        if (left[i] != right[i]) return left[i] - right[i];
-    }
-    return 0;
 }
 
 string string_Concat(string first, string second)
@@ -127,3 +119,43 @@ string string_Format(string format, ...)
     va_end(argv);
     return new(string)(buf);
 }
+
+#include "EnumerableImplement.h"
+#include "ListImplement.h"
+ENUMERABLE_DEFINE(string)
+ENUMERABLE_DEFINE_AGGREGATE(string, int)
+LIST_DEFINE(string)
+
+static int sumLengths(int current, string item)
+{
+    return current + string_Length(item);
+}
+
+string string_Join(string separator, IEnumerable(string) values)
+{
+    if (values == NULL) return NULL;
+    List(string) list = Enumerable_string_ToList(values);
+    if (list->Count == 0) {
+        List_string_Destroy(&list);
+        return string_Empty;
+    }
+    int totalLength = Enumerable_string_Aggregate_int(
+        (IEnumerable(string))(list),
+        string_Length(separator) * (list->Count - 1),
+        sumLengths);
+    string first = list->Values[0];
+    string result = arralloc(char, totalLength + 1);
+    memcopy((char*)(result + string_Length(result)), first, string_Length(first));
+    List_string_Remove(list, first);
+    foreach (string str in list) {
+        memcopy((char*)(result + string_Length(result)), separator, string_Length(separator));
+        memcopy((char*)(result + string_Length(result)), str, string_Length(str));
+    }
+    List_string_Destroy(&list);
+    ((char*)result)[totalLength] = 0;
+    return result;
+}
+
+ENUMERABLE_IMPLEMENT(string)
+ENUMERABLE_IMPLEMENT_AGGREGATE(string, int)
+LIST_IMPLEMENT(string)

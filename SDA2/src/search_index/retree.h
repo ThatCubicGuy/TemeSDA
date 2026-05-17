@@ -5,12 +5,12 @@
 #include "ListT.h"
 #include "HeapT.h"
 #include "Tuple.h"
+#include "String.h"
 
-ENUMERABLE_DEFINE(string)
 HASH_SET_DEFINE(string)
 LIST_DEFINE(string)
 
-typedef struct tag_File {
+typedef TAG(File) {
     string ID;
     int Score;
     HashSet(string) Keywords;
@@ -24,8 +24,8 @@ LIST_DEFINE(File)
 HEAP_DEFINE(File)
 ENUMERABLE_DEFINE_SELECT(File, string)
 
-typedef struct tag_rt *RetrievalTree;
-struct tag_rt {
+typedef TAG(rt) *RetrievalTree;
+TAG(rt) {
     HashSet(File) FileRefs;
     RetrievalTree Children[26];
 };
@@ -40,7 +40,7 @@ IEnumerable(File) RT_GetPrefix(RetrievalTree source, string prefix);
 
 void RT_Destroy(RetrievalTree *source);
 
-typedef struct tag_NotFoundException {
+typedef TAG(NotFoundException) {
     IMPL(Exception);
 } *NotFoundException;
 NotFoundException NotFoundException__ctor(string msg);

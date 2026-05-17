@@ -366,6 +366,15 @@
 // Concatenates the line number to an identifier in order to make it unique to a macro.
 #define UNIQ(x) CAT(x,__LINE__)
 
+#define __IFvar ,
+#define __IFauto ,
+#define IF_INFERRED_I(TYPE_VAR, VAR, EXPR, ...) EXPR
+#define IF_INFERRED(OP, t, f) E1(DEFER(IF_INFERRED_I)(CAT(__IF,OP), t, f))
+
+// CAST macro for turning a type name into a cast
+// unless it is `auto` or `var`
+#define CAST(TYPE) IF_INFERRED(TYPE,,(TYPE))
+
 #define __TO_FOR_DECL(TYPE_NAME_INIT) for(TYPE_NAME_INIT; UNIQ(_once); UNIQ(_once) = 0)
 #define PREDEFINE(TYPE_NAME_INIT...) for(int UNIQ(_once) = 1; UNIQ(_once); UNIQ(_once) = 0) FOREACH(__TO_FOR_DECL, TYPE_NAME_INIT)
 

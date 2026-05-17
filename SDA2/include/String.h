@@ -1,6 +1,6 @@
 #ifndef CUBE_STRING
 #define CUBE_STRING
-#include "Delegate.h"
+#include "Keywords.h"
 
 /**
  * @brief Represents the empty string.
@@ -10,27 +10,21 @@ extern const string string_Empty;
 
 EQUALITY_COMPARER_DEFINE(string)
 COMPARER_DEFINE(string)
-struct StringComparer_s {
+TAG(StringComparer) {
     union {
-        struct tag_IComparer_string Comparer[1];
-        struct tag_IComparer_string;
+        TAG(IComparer(string)) Comparer[1];
+        TAG(IComparer(string));
     };
     union {
-        struct tag_IEqualityComparer_string EqualityComparer[1];
-        struct tag_IEqualityComparer_string;
+        TAG(IEqualityComparer(string)) EqualityComparer[1];
+        TAG(IEqualityComparer(string));
     };
 };
-extern const struct StaticStringComparer_s {
-    struct StringComparer_s Ordinal;
-    struct StringComparer_s OrdinalIgnoreCase;
+extern const TAG(StringComparerStatic) {
+    TAG(StringComparer) Ordinal;
+    TAG(StringComparer) OrdinalIgnoreCase;
 } StringComparer;
 
-/**
- * @brief Generates the hash code for a string.
- * @returns A hash code that represents the given string.
- * @pure
- */
-unsigned long string_HashCode(string source);
 /**
  * @brief Copies a string and returns the result.
  * @return A new string with characters from the other.
@@ -45,14 +39,6 @@ string string__ctor(string other);
  * @pure
  */
 int string_Length(string source);
-
-/**
- * @brief Compares two strings and returns the result.
- * @returns A positive number if left > right,
- * a negative number if left < right, and zero if left == right.
- * @pure
- */
-int string_Compare(string left, string right);
 
 /**
  * @brief Concatenates two strings and returns the result.

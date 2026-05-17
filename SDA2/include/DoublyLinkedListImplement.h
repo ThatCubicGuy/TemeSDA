@@ -1,8 +1,6 @@
 #ifndef COLLECTIONS_GENERIC_DOUBLY_LINKED_LIST_IMPLEMENTATIONS
 #define COLLECTIONS_GENERIC_DOUBLY_LINKED_LIST_IMPLEMENTATIONS
-
 #include "DoublyLinkedListT.h"
-
 #pragma region Implement
 
 #define DOUBLY_LINKED_LIST_IMPLEMENT(T)                                                 \

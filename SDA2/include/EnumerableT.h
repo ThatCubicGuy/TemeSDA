@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_GENERIC_ENUMERABLE
 #define COLLECTIONS_GENERIC_ENUMERABLE
-#include <stdbool.h>
+#include "Keywords.h"
 #pragma region Define
 
 #define IEnumerator(T) CAT(IEnumerator_,T)

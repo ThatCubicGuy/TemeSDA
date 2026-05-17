@@ -23,29 +23,49 @@ OBJFOLDERS:=$(patsubst ${SRC}/%/,${OBJ}/%,$(wildcard ${SRC}/*/))
 LIBOBJECTS:=$(patsubst ${LIB}/%.c,${LIBOBJ}/%.o,$(wildcard ${LIB}/*.c) $(wildcard ${LIB}/*/*.c))
 LIBFOLDERS:=$(patsubst ${LIB}/%/,${LIBOBJ}/%,$(wildcard ${LIB}/*/))
 EXES:=${OBJFOLDERS:${OBJ}/%=${BIN}/%.exe} $(patsubst ${SRC}/%.c,${BIN}/%.exe,$(wildcard ${SRC}/*.c))
+LIBS:=${LIBFOLDERS:${LIBOBJ}/%=${BIN}/%.a} $(patsubst ${LIB}/%.c,${BIN}/%.o,$(wildcard ${LIB}/*.c))
+
+# Using directives
+USING:=
+USING+=Collections
+USING+=Collections/Generic
 
 # Compiler setup
 CC:=gcc
-CWARNS:=all extra no-dangling-else #required because of one of my macros :moai:
-CFLAGS:=${CWARNS:%=-W%} -I${HDR} -I${LIB} -include${HDR}/Keywords.h -include${LIB}/System/String.h -std=c17 -fms-extensions
+CWARNS:=all extra no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
+CFLAGS:=-g ${CWARNS:%=-W%} -I${HDR} -I${LIB} ${USING:%=-I${HDR}/%} -std=c17 -fms-extensions
 
-build:
+# Functions
+## Get objects relevant to $1 considering root $2 from list $3.
+get_relevant_objs=$(filter $(basename $(patsubst ${BIN}/%,$(2)/%,$(1)))/% $(basename $(patsubst ${BIN}/%,$(2)/%,$(1))).%,$(3))
+
+build: all
+	cp ${BIN}/search_index.exe search_index
 
 all: ${EXES}
 
 run: all
-	${EXES:%=echo; TARGET=%; $${TARGET} || echo -e "\n$${TARGET}: exit $$?";}
+	${foreach target,${EXES},echo; ${target} || echo -e "\n${target}: exit $$?";}
+
+void:
 
 # Basically enable Make to take filenames as arguments
-$(basename $(notdir ${EXES})): %: ${BIN}/%.exe
+$(basename $(notdir ${EXES})): %: ${BIN}/%.exe void
 	@$<
 
-.SECONDEXPANSION:
-${EXES}: $$(filter $$(basename $$(patsubst ${BIN}/%,${OBJ}/%,$$@))%,${OBJFOLDERS} ${OBJECTS}) ${LIBOBJECTS} | ${BIN}
-	${CC} ${CFLAGS} $(filter %.o,$^) -o $@
+pack: ${LIBS}
 
-${OBJECTS}: ${OBJ}/%.o: ${SRC}/%.c ${HDRFILES} | ${OBJ}
+.SECONDEXPANSION:
+${EXES}: $$(call get_relevant_objs,$$@,${OBJ},${OBJECTS}) ${LIBS} | ${BIN}
+	${CC} ${CFLAGS} $^ -o $@
+
+.SECONDEXPANSION:
+${OBJECTS}: ${OBJ}/%.o: ${SRC}/%.c ${HDRFILES} | ${OBJ} ${OBJFOLDERS}
 	${CC} ${CFLAGS} -c $< -o $@
+
+.SECONDEXPANSION:
+${LIBS}: $$(call get_relevant_objs,$$@,${LIBOBJ},${LIBOBJECTS}) | ${BIN}
+	ar rcs $@ $^
 
 .SECONDEXPANSION:
 ${LIBOBJECTS}: ${LIBOBJ}/%.o: ${LIB}/%.c ${HDRFILES} $$(wildcard $$(subst ${LIBOBJ},${LIB},$$(dir $$@))/*.h) | ${LIBFOLDERS} ${LIBOBJ}
@@ -64,17 +84,20 @@ clean:
 	rm -f ${OBJECTS} ${EXES}
 
 cleanlib:
-	rm -f ${LIBOBJECTS}
+	rm -f ${LIBOBJECTS} ${LIBS}
 
 reset:
 	rm -rf ${BIN} ${OBJ}
 
 debug:
-	@echo -e "\033[35mUniversal dependencies:\033[35m${LIBOBJECTS:%=\n    %}\033[0m\n"
+	@echo -e "\033[36mUniversal dependencies:\033[0m"
+	@echo -e "$(foreach lib,${LIBS},    \033[35m${lib}\033[0m$(patsubst %,\n      \033[34m└──> \033[31m%\033[0m,$(filter ${lib:${BIN}/%.a=${LIBOBJ}/%}%,${LIBOBJECTS}))\n)"
 	@echo -e "\033[36mObject files:\033[33m${OBJECTS:%=\n    %}\033[0m"
 	@echo -e "$(foreach ex,${EXES},\n\033[32m${ex}\033[0m$(patsubst %,\033[33m\n  └──> \033[31m%\033[0m,$(filter ${ex:${BIN}/%.exe=${OBJ}/%}%,${OBJECTS})))"
 
+debuger:
+	@echo -e "TEST:\n$(call get_relevant_objs,$(firstword ${EXES}),${OBJECTS})"
 cc:
 	${CC} --version
 
-.PHONY: all run clean reset debug cc
+.PHONY: all run test clean reset debug cc

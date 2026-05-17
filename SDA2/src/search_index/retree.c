@@ -1,10 +1,11 @@
+#include "HashSetT.h"
 #include "Keywords.h"
 #include "retree.h"
-#include "System/String.h"
+#include "String.h"
 
 #include <stdio.h>
 
-struct tag_IEqualityComparer_File FileComparer[1] = {(struct tag_IEqualityComparer_File) {
+TAG(IEqualityComparer(File)) FileComparer[1] = {(TAG(IEqualityComparer(File))) {
     .Equals = (bool(*)(File,File))object_ReferenceEquals,
     .GetHashCode = (size_t(*)(File))object_GetHashCode,
 }};
@@ -14,8 +15,20 @@ static inline int idx(char c)
     return ('A' <= c && c <= 'Z') ? c - 'A' : c - 'a';
 }
 
+#define printhashset(SOURCE) do {                                                                                   \
+    for (int i = 0, j; i < MAX_HASH_SET_ARRAY_LENGTH; ++i) {                                                        \
+        j = 0;                                                                                                      \
+        for (typeof(void*) old = (void*)1, p = SOURCE->_items[i]; old; (void)((old = p) && (p = *(void**)p)), ++j) {\
+            fprintf(stderr, "Item \033[3%dm#%d.%d\033[0m: %p\n", j + 1, i, j, p);                                   \
+        } } } while (0)
+
+// Macro to automatically throw an exception if a given parameter is null.
+#define TO_NULL_CHECK(x) if (!(x)) throw new(Exception)("Parameter {"#x"} is null");
+#define THROW_IF_NULL(...) do { FOREACH(TO_NULL_CHECK, __VA_ARGS__) } while (0)
+
 File File__ctor(string id, int score, IEnumerable(string) keywords)
 {
+    THROW_IF_NULL(id, keywords);
     File result = memalloc(File);
     *result = init(File) {
         .ID = new(string)(id),
@@ -27,51 +40,57 @@ File File__ctor(string id, int score, IEnumerable(string) keywords)
 
 void RT_Add(RetrievalTree source, string keyword, File file)
 {
-    if (!keyword || !file) throw(new(Exception)("Keyword or file is null (RT_Add)"));
-    fprintf(stderr, "Adding keyword \033[32m%s\033[0m to file \033[33m%s\033[0m\n", keyword, file->ID);
+    THROW_IF_NULL(source, keyword, file);
     RetrievalTree current = source;
+    fprintf(stderr, "Reading ");
     for (int i = 0; keyword[i]; ++i) {
+        fprintf(stderr, "\033[2;%dm%c", i + 30, keyword[i]);
         if (!current->Children[idx(keyword[i])]) {
             current->Children[idx(keyword[i])] = memalloc(RetrievalTree);
-            *current->Children[idx(keyword[i])] = (struct tag_rt){0};
+            *current->Children[idx(keyword[i])] = (TAG(rt)){0};
         }
         current = current->Children[idx(keyword[i])];
     }
+    fprintf(stderr, "\033[0m...\n");
     if (!current->FileRefs) current->FileRefs = new(HashSet(File))(FileComparer);
+    fprintf(stderr, "Adding keyword \033[32m%s\033[0m to file \033[33m%s\033[0m\n", keyword, file->ID);
     HashSet_File_Add(current->FileRefs, file);
+    fprintf(stderr, "New count: %d\n", current->FileRefs->Count);
+    if (StringComparer.Ordinal.Equals(keyword, "hawkins")) printhashset(current->FileRefs);
 }
 
 void RT_Del(RetrievalTree source, string keyword, File file)
 {
-    if (!keyword || !file) throw(new(Exception)("Keyword or file is null (RT_Del)"));
-    fprintf(stderr, "Deleting keyword \033[32m%s\033[0m from file \033[33m%s\033[0m\n", keyword, file->ID);
+    THROW_IF_NULL(source, keyword, file);
     RetrievalTree current = source;
     for (int i = 0; keyword[i]; ++i) {
-        if (!current->Children[idx(keyword[i])]) throw(new(Exception)("Keyword does not exist (RT_Del)"));
+        if (!current->Children[idx(keyword[i])]) throw new(Exception)("Keyword does not exist (RT_Del)");
         current = current->Children[idx(keyword[i])];
     }
-    if (!current->FileRefs) throw(new(Exception)("Keyword is incomplete (RT_Del)"));
+    if (!current->FileRefs) throw new(Exception)("Keyword is incomplete (RT_Del)");
+    fprintf(stderr, "Deleting keyword \033[32m%s\033[0m from file \033[33m%s\033[0m\n", keyword, file->ID);
     HashSet_File_Remove(current->FileRefs, file);
+    fprintf(stderr, "New count: %d\n", current->FileRefs->Count);
     // Removing the keyword is simple! Just erase its hash set.
     if (current->FileRefs->Count == 0) {
         HashSet_File_Destroy(&current->FileRefs);
+        fprintf(stderr, "HashSet for keyword \033[32m%s\033[0m has been \033[31mdestroyed.\033[0m\n", keyword);
     }
     // Proper container freeing will be done upon system destruction.
 }
 
 IEnumerable(File) RT_GetRefs(RetrievalTree source, string keyword)
 {
-    if (!keyword) throw(new(Exception)("Keyword is null (RT_GetRefs)"));
+    THROW_IF_NULL(source, keyword);
     RetrievalTree current = source;
     fprintf(stderr, "Getting all references for keyword \033[32m%s\033[0m\n", keyword);
     for (int i = 0; keyword[i]; ++i) {
         current = current->Children[idx(keyword[i])];
-        if (!current) {
-            fprintf(stderr, "Uh oh! [%c]\n", keyword[i]);
-            return Enumerable_File_Empty;
-        }
+        if (!current) return Enumerable_File_Empty;
     }
-    if (!current->FileRefs) throw(new(Exception)("ERR_NOT_TERMINAL_KW"));
+    if (!current->FileRefs) throw new(Exception)("ERR_NOT_TERMINAL_KW");
+    fprintf(stderr, "Ref count: %d\n", current->FileRefs->Count);
+    if (StringComparer.Ordinal.Equals(keyword, "hawkins")) printhashset(current->FileRefs);
     return (IEnumerable(File))current->FileRefs;
 }
 
@@ -90,7 +109,7 @@ static void FindFiles(RetrievalTree source, HashSet(File) result)
 
 IEnumerable(File) RT_GetPrefix(RetrievalTree source, string prefix)
 {
-    if (!prefix) throw(new(Exception)("Prefix is null (RT_GetPrefix)"));
+    THROW_IF_NULL(source, prefix);
     RetrievalTree current = source;
     fprintf(stderr, "Getting all references for prefix \033[35m%s\033[0m\n", prefix);
     for (int i = 0; prefix[i]; ++i) {

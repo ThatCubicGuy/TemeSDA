@@ -9,7 +9,8 @@ enum tag_CmdID {
     DELKW,
     FIND,
     TOPK,
-    PRINT
+    PRINT,
+    PREFIX
 };
 typedef struct tag_Cmd {
     enum tag_CmdID cmd_id;
@@ -28,8 +29,9 @@ typedef struct tag_Cmd {
 
 Cmd parse_cmd(System sys, string command)
 {
+    fprintf(stderr, "Parsing command \"%s\"...\n", command);
     if (StringComparer.Ordinal.Equals(command, "ADD")) {
-        char id_buf[1024];
+        typeof(char[1024]) id_buf;
         int score, count;
         fscanf(sys->input, "%s %d %d ", id_buf, &score, &count);
         List(string) kws = new(List(string))(count);
@@ -87,7 +89,15 @@ Cmd parse_cmd(System sys, string command)
         return (Cmd) {
             .cmd_id = PRINT
         };
-    } else throw(new(Exception)(string_Format("Unknown command: %s", command)));
+    } else if (StringComparer.Ordinal.Equals(command, "PREFIX")) {
+        typeof(char[1024]) prefix_buf;
+        fscanf(sys->input, "%s", prefix_buf);
+        return (Cmd) {
+            .cmd_id = PREFIX,
+            .keyword = new(string)(prefix_buf)
+        };
+    } else throw new(Exception)(string_Format("Unknown command: %s", command));
+    return default(Cmd);
 }
 
 int main(int argc, char** argv)
@@ -127,38 +137,25 @@ int main(int argc, char** argv)
                 if (DelKW(sys, cmd.file_id, cmd.keyword)) fprintf(sys->output, "OK\n");
                 else fprintf(sys->output, "NOT FOUND\n");
                 break;
-            case FIND: try {
-                    Heap(File) files = Find(sys, cmd.keyword);
-                    File f;
-                    fprintf(sys->output, "%d ", files->Count);
-                    while (Heap_File_TryPop(files, &f)) {
-                        fprintf(sys->output, "%s ", f->ID);
-                    }
-                    fprintf(sys->output, "\n");
-                } catch (Exception ex) {
-                    if (StringComparer.Ordinal.Equals(ex->Message, "ERR_NOT_TERMINAL_KW")) {
-                        fprintf(sys->output, "EMPTY\n");
-                    }
-                }
+            case FIND:
+                Find(sys, cmd.keyword);
                 break;
-            case TOPK: do {
-                    Heap(File) files = TopK(sys, cmd.keyword);
-                    File f;
-                    while ((cmd.count -= 1) >= 0 && Heap_File_TryPop(files, &f)) {
-                        fprintf(sys->output, "%s ", f->ID);
-                    }
-                    fprintf(sys->output, "\n");
-                } while (0);
+            case TOPK:
+                TopK(sys, cmd.keyword, cmd.count);
                 break;
             case PRINT:
                 Print(sys);
+                break;
+            case PREFIX:
+                Prefix(sys, cmd.keyword);
                 break;
             }
         }
     }
     catch (Exception ex) {
+        fprintf(stderr, "Exception thrown: ");
         fprintf(stderr, "%s\n", ex->Message);
-        fprintf(stderr, "Program interrupted: exception thrown\n");
+        fprintf(stderr, "Program interrupted.\n");
         return 1;
     }
     return 0;

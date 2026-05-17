@@ -1,5 +1,7 @@
 #ifndef COLLECTIONS_GENERIC_HASH_SET_IMPLEMENTATIONS
 #define COLLECTIONS_GENERIC_HASH_SET_IMPLEMENTATIONS
+#include "HashSetT.h"
+#include "Keywords.h"
 
 #define HASH_SET_IMPLEMENT(T)                                                                   \
 TAG(HashSetEntry_##T) {                                                                         \
@@ -57,7 +59,7 @@ void HashSet_##T##_Add(HashSet(T) source, T item)                               
     };                                                                                          \
     size_t index = node->Hash % MAX_HASH_SET_ARRAY_LENGTH;                                      \
     HashSetEntry_##T *bucket = &source->_items[index];                                          \
-    while (*bucket && !source->Comparer->Equals((*bucket)->Value, item)) {                      \
+    while ((*bucket) && !(source->Comparer->Equals((*bucket)->Value, item))) {                  \
         bucket = &(*bucket)->Next;                                                              \
     }                                                                                           \
     if (*bucket) {                                                                              \
@@ -77,7 +79,7 @@ bool HashSet_##T##_Remove(HashSet(T) source, T item)                            
         source->_items[index] = bucket->Next;                                                   \
         memfree(bucket);                                                                        \
         return true;                                                                            \
-    } else for (bucket = bucket->Next; bucket; bucket = bucket->Next) {                         \
+    } else for (bucket = bucket->Next; bucket; old = bucket, bucket = bucket->Next) {           \
         if (source->Comparer->Equals(bucket->Value, item)) {                                    \
             source->Count -= 1;                                                                 \
             old->Next = bucket->Next;                                                           \
@@ -105,14 +107,14 @@ void HashSet_##T##_RemoveWhere(HashSet(T) source, bool (*predicate)(T))         
                 memfree(bucket);                                                                \
                 bucket = old->Next;                                                             \
             }                                                                                   \
-            if (!bucket) break;                                                                 \
         }                                                                                       \
     }                                                                                           \
 }                                                                                               \
 static void RemoveNodes_##T(HashSetEntry_##T start)                                             \
 {                                                                                               \
-    if (start) RemoveNodes_##T(start->Next);                                                    \
-    memfree(start);                                                                             \
+    if (start) {RemoveNodes_##T(start->Next);                                                    \
+    fprintf(stderr, "Removing %p...\n", start);\
+    memfree(start);}                                                                             \
 }                                                                                               \
 void HashSet_##T##_Clear(HashSet(T) source)                                                     \
 {                                                                                               \

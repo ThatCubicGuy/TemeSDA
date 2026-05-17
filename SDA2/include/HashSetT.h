@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_GENERIC_HASH_SET
 #define COLLECTIONS_GENERIC_HASH_SET
-
+#include "Keywords.h"
 #define HashSet(T) CAT(HashSet_,T)
 
 #pragma region Define

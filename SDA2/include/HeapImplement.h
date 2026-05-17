@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_GENERIC_HEAP_IMPLEMENTATIONS
 #define COLLECTIONS_GENERIC_HEAP_IMPLEMENTATIONS
-
+#include "HeapT.h"
 #define HEAP_IMPLEMENT(T)                                               \
 Heap(T) new(Heap(T))(int capacity, int type, int (*comparer)(T, T))     \
 {                                                                       \
@@ -12,6 +12,12 @@ Heap(T) new(Heap(T))(int capacity, int type, int (*comparer)(T, T))     \
         ._items = arralloc(T, capacity)                                 \
     };                                                                  \
     return result;                                                      \
+}                                                                       \
+void Heap_##T##_Destroy(Heap(T) *source)                                \
+{                                                                       \
+    memfree((*source)->_items);                                         \
+    memfree(*source);                                                   \
+    *source = NULL;                                                     \
 }                                                                       \
 void Heap_##T##_Push(Heap(T) source, T item)                            \
 {                                                                       \

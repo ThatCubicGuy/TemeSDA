@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_GENERIC_ENUMERABLE_IMPLEMENTATIONS
 #define COLLECTIONS_GENERIC_ENUMERABLE_IMPLEMENTATIONS
-
+#include "EnumerableT.h"
 #define ENUMERABLE_IMPLEMENT(T)                                                                         \
 static bool EmptyMoveNext_##T([[maybe_unused]] IEnumerator(T) This) { return false; }                   \
 static void EmptyReset_##T([[maybe_unused]] IEnumerator(T) This) {}                                     \
@@ -18,7 +18,7 @@ static IEnumerator(T) EmptyEnumerator_##T([[maybe_unused]] IEnumerable(T) This) 
 TAG(IEnumerable(T)) Enumerable_##T##_Empty[1] = {(TAG(IEnumerable(T))) {                                \
     .GetEnumerator = EmptyEnumerator_##T                                                                \
 }};                                                                                                     \
-typedef TAG(CompoundEnumerator_##T) {                                                             \
+typedef TAG(CompoundEnumerator_##T) {                                                                   \
     IMPL(IEnumerator(T));                                                                               \
     IEnumerator(T) _currentEnumerator;                                                                  \
     IEnumerable(T) _baseEnumerable;                                                                     \
@@ -297,9 +297,10 @@ IEnumerable(T) Enumerable_##T##_Concat(IEnumerable(T) first, IEnumerable(T) seco
 }                                                                                                       \
 T Enumerable_##T##_ElementAt(IEnumerable(T) source, int index)                                          \
 {                                                                                                       \
+    if (index < 0) return default(T);                                                                   \
     IEnumerator(T) e = source->GetEnumerator(source);                                                   \
     while(e->MoveNext(e) && index > 0) { index -= 1; }                                                  \
-    T item = e->Current;                                                                                \
+    T item = index ? default(T) : e->Current;                                                           \
     e->Dispose(e);                                                                                      \
     return item;                                                                                        \
 }                                                                                                       \

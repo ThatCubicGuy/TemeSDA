@@ -1,6 +1,6 @@
 #ifndef COLLECTIONS_GENERIC_LIST_IMPLEMENTATIONS
 #define COLLECTIONS_GENERIC_LIST_IMPLEMENTATIONS
-
+#include "ListT.h"
 #define LIST_IMPLEMENT(T)                                                                       \
 typedef TAG(ListEnumerator_##T) {                                                               \
     IMPL(IEnumerator(T));                                                                       \
