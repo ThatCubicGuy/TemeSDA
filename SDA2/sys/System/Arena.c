@@ -1,44 +1,97 @@
-#ifdef USE_ARENA_ALLOC
 #include "Keywords.h"
 #include "System.h"
+#if ALLOC_TYPE == ARENA_ALLOC
 
-#define ARENA_SIZE 16777216UL // 16 MB
+#define ARENA_MEMORY_SIZE 16777216uL // 16 MB
+#define ARENA_LIST_SIZE 16384uL // 16 KB
 
 typedef TAG(Allocation) {
-    void* location;
+    void* address;
     size_t size;
 } Allocation;
 
-TAG(ArenaStatic) {
-    typeof(Allocation*) Start, LastAlloc;
-    size_t Tail;
-} static Arena = {
-    .Tail = 0,
+static TAG(ArenaStatic) {
+    void* Start;
+    size_t Tail, AllocCount, EmptySpaceCount;
+    Allocation LastAlloc;
+    Allocation EmptySpaces[ARENA_LIST_SIZE / 256]; // 1 KB
+    Allocation Allocs[ARENA_LIST_SIZE]; // 256 KB
+} Arena = {
     .Start = NULL,
     .LastAlloc = NULL,
+    .Allocs = {0},
+    .EmptySpaces = {0},
+    .EmptySpaceCount = 0,
+    .AllocCount = 0,
+    .Tail = 0,
 };
 
-static void* ArenaAlloc(size_t size)
+static Allocation ArenaAlloc(size_t block_size)
 {
-    Arena.Tail += size;
-    DEBUG_ASSERT(Arena.Tail < ARENA_SIZE, "Allocation exceeds maximum arena memory!\n");
-    Arena.LastAlloc = Arena.Start + Arena.Tail - size;
-    return Arena.LastAlloc;
+    DEBUG_ASSERT(block_size > 0, "ERROR: Cannot allocate block of zero bytes!\n");
+    DEBUG_ASSERT(Arena.Tail + block_size < ARENA_MEMORY_SIZE, "ERROR: Allocation of size %zu B exceeds maximum arena memory!\n", block_size);
+    for (size_t i = 0; i < Arena.EmptySpaceCount; ++i) {
+
+        // If we find a suitable empty space, perfect!
+        if (Arena.EmptySpaces[i].size >= block_size) {
+
+            // Save the allocation for returning
+            Allocation result = Arena.EmptySpaces[i];
+
+            // Adjust the empty space's metadata
+            Arena.EmptySpaces[i].address += block_size;
+            Arena.EmptySpaces[i].size -= block_size;
+
+            // Remove the empty space if it's now filled
+            if (Arena.EmptySpaces[i].size == 0) {
+                Arena.EmptySpaceCount -= 1;
+                for (size_t j = i; j < Arena.EmptySpaceCount; ++j) {
+                    Arena.EmptySpaces[j] = Arena.EmptySpaces[j + 1];
+                }
+            }
+            return result;
+        }
+    }
+
+    // Increase the stack pointer and return the new space
+    Arena.Tail += block_size;
+    return Arena.Allocs[Arena.AllocCount++] = (Allocation) {
+        .address = Arena.Start + Arena.Tail - block_size,
+        .size = block_size,
+    };
 }
 
-// Deprecated for now
-// static void ArenaDealloc(void* obj)
-// {
-// }
+static Allocation ArenaDealloc(void* obj)
+{
+    for (size_t i = 0; i < Arena.AllocCount; ++i) {
+        if (Arena.Allocs[i].address == obj) {
+
+            // Mark the space as freed
+            Arena.EmptySpaces[Arena.EmptySpaceCount++] = (Allocation) {
+                .address = obj,
+                .size = Arena.Allocs[i].size
+            };
+            // Compress the allocations array
+            Arena.AllocCount -= 1;
+            for (size_t j = i; j < Arena.AllocCount; ++j) {
+                Arena.Allocs[j] = Arena.Allocs[j + 1];
+            }
+            return Arena.EmptySpaces[Arena.EmptySpaceCount - 1];
+        }
+    }
+
+    throw new(Exception)("ERROR: Attempt to dealloc unallocated arena memory!\n");
+    return default(Allocation);
+}
 
 void ARENA_INIT(void)
 {
-    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", ARENA_SIZE);
+    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", ARENA_MEMORY_SIZE);
     if (Arena.Start) {
-        fprintf(stderr, "WARNING: Attempt to reinitialize arena!");
-        return;
+        fprintf(stderr, "ERROR: Attempt to reinitialize arena!\n");
+        exit(EXIT_FAILURE);
     }
-    Arena.Start = malloc(ARENA_SIZE * sizeof(Allocation));
+    Arena.Start = malloc(ARENA_MEMORY_SIZE);
     if (!Arena.Start) {
         fprintf(stderr, "ERROR: Cannot allocate arena!");
         exit(EXIT_OUT_OF_MEMORY);
@@ -54,8 +107,9 @@ void ARENA_DESTROY(void)
     }
     free(Arena.Start);
     Arena = (TAG(ArenaStatic)) {
-        .LastAlloc = NULL,
         .Start = NULL,
+        .AllocCount = 0,
+        .Allocs = {0},
         .Tail = 0,
     };
 }
@@ -63,19 +117,30 @@ void ARENA_DESTROY(void)
 void* memalloc_(size_t block_size)
 {
     DEBUG_WRITELINE("Called memalloc with size %zu B. Current stack size: %zu B", block_size, Arena.Tail);
-    if (block_size == 0) return Arena.LastAlloc;
+    if (block_size == 0) return Arena.LastAlloc.address;
+    Arena.LastAlloc = ArenaAlloc(block_size);
+    return Arena.LastAlloc.address;
 }
 
 void* zeroalloc_(size_t block_size)
 {
     DEBUG_WRITELINE("Called zeroalloc with size %zu B. Current stack size: %zu B", block_size, Arena.Tail);
-
+    Arena.LastAlloc = ArenaAlloc(block_size);
+    for (size_t i = 0; i < block_size; ++i) {
+        ((byte*)Arena.LastAlloc.address)[i] = 0;
+    }
+    return Arena.LastAlloc.address;
 }
 
-void* memresize_(void* old_location, size_t new_size)
+void* memresize_(void* old_address, size_t new_size)
 {
-    DEBUG_WRITELINE("Called memresize on %p with new size %zu B. Current stack size: %zu B", old_location, new_size, Arena.Tail);
-
+    DEBUG_WRITELINE("Called memresize on %p with new size %zu B. Current stack size: %zu B", old_address, new_size, Arena.Tail);
+    Allocation previous = ArenaDealloc(old_address);
+    Arena.LastAlloc = ArenaAlloc(new_size);
+    for (size_t i = 0; i < previous.size; ++i) {
+        ((byte*)Arena.LastAlloc.address)[i] = ((byte*)previous.address)[i];
+    }
+    return Arena.LastAlloc.address;
 }
 
 void memcopy_(void* dest, const void* source, size_t size)
@@ -86,70 +151,11 @@ void memcopy_(void* dest, const void* source, size_t size)
     }
 }
 
-void memfree_(void* location)
+void memfree_(void* address)
 {
-    // Only thing we can free lmao
-    if (location == Arena.LastAlloc) {
-
-    }
-}
-
-void* memalloc_(size_t size)
-{
-    // Special functionality of memalloc_ - return last allocation if size is 0
-    if (size == 0) return HeapTrace.alloc_count > 0 ? HeapTrace.allocs[HeapTrace.alloc_count - 1] : throwe(new(Exception)("No last allocation to get!"));
-    DEBUG_ASSERT(HeapTrace.alloc_count >= 0 && HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "Heap alloc count: %zu\n", HeapTrace.alloc_count);
-    HeapTrace.allocs[HeapTrace.alloc_count] = malloc(size);
-    return HeapTrace.allocs[HeapTrace.alloc_count] ? HeapTrace.allocs[HeapTrace.alloc_count++] : throwe(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size));
-}
-
-void* zeroalloc_(size_t size)
-{
-    DEBUG_WRITELINE("Called zeroalloc with size %zu. Current heap allocations: %zu", size, HeapTrace.alloc_count);
-    if (size == 0) throw new(Exception)("Cannot allocate block of size 0! (zeroalloc)");
-    DEBUG_ASSERT(HeapTrace.alloc_count >= 0 && HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "Heap alloc count: %zu\n", HeapTrace.alloc_count);
-    HeapTrace.allocs[HeapTrace.alloc_count] = calloc(1, size);
-    return HeapTrace.allocs[HeapTrace.alloc_count] ? HeapTrace.allocs[HeapTrace.alloc_count++] : throwe(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size));
-}
-
-void* memresize_(void* obj, size_t new_size)
-{
-    DEBUG_WRITELINE("Called memresize with new size %zu. Current heap allocations: %zu", new_size, HeapTrace.alloc_count);
-    if (new_size == 0) throw new(Exception)("Cannot allocate block of size 0! (memresize)");
-    DEBUG_ASSERT(HeapTrace.alloc_count > 0 && HeapTrace.alloc_count < HEAPTRACE_SIZE, "Heap alloc count: %zu\n", HeapTrace.alloc_count);
-    for (size_t i = 0; i < HeapTrace.alloc_count; ++i) {
-        if (HeapTrace.allocs[i] == obj) {
-            void* last_alloc = realloc(obj, new_size);
-            return last_alloc ? HeapTrace.allocs[i] = last_alloc : throwe(new(OutOfMemoryException)("Not enough memory to reallocate to new block of %d bytes", new_size));
-        }
-    }
-    throw new(Exception)("Reallocation of unallocated memory!");
-}
-
-void memfree_(void* obj)
-{
-    DEBUG_WRITELINE("Called memfree for location %p. Current heap allocations: %zu", obj, HeapTrace.alloc_count);
-    if (obj == NULL) return;
-    for (size_t i = 0; i < HeapTrace.alloc_count; ++i) {
-        if (HeapTrace.allocs[i] == obj) {
-            HeapTrace.alloc_count -= 1;
-            free(HeapTrace.allocs[i]);
-            for (size_t j = i; j < HeapTrace.alloc_count; ++j) {
-                HeapTrace.allocs[j] = HeapTrace.allocs[j + 1];
-            }
-            HeapTrace.allocs[HeapTrace.alloc_count] = NULL;
-            return;
-        }
-    }
-    throw new(Exception)("Cannot free unallocated memory!");
-}
-
-void memcopy_(void* dest, const void* source, size_t size)
-{
-    DEBUG_WRITELINE("Called memcopy from %p to %p with size %zu. Current heap allocations: %zu", source, dest, size, HeapTrace.alloc_count);
-    for (size_t i = 0; i < size; ++i) {
-        ((byte*)dest)[i] = ((byte*)source)[i];
-    }
+    if (!address) return;
+    DEBUG_WRITELINE("Called memfree on %p. Current stack size: %zu B", address, Arena.Tail);
+    ArenaDealloc(address);
 }
 
 #endif

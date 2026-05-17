@@ -1,6 +1,6 @@
-#ifdef USE_HEAP_ALLOC
 #include "Keywords.h"
 #include "System.h"
+#if ALLOC_TYPE == HEAP_ALLOC
 
 // God I need a garbage collector...
 #define HEAPTRACE_SIZE 4096

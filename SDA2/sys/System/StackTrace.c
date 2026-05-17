@@ -5,18 +5,18 @@
 
 #define STACKTRACE_SIZE 256
 
-TAG(StackTraceStatic) {
+static TAG(StackTraceStatic) {
     Exception LastThrownException;
     int Tail;
     bool UpThrow;
     bool FinallyReturnsToCode;
     jmp_buf Stack[STACKTRACE_SIZE][1];
-} static StackTrace = {
+} StackTrace = {
     .LastThrownException = NULL,
     .Tail = 0,
     .UpThrow = false,
     .FinallyReturnsToCode = false,
-    .Stack = {0},
+    .Stack = {{{{{0},0,{{0}}}}}},
 };
 
 jmp_buf* StackTrace_Push(void)
