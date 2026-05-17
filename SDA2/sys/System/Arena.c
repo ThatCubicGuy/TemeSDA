@@ -2,81 +2,56 @@
 #include "Keywords.h"
 #include "System.h"
 
-#define INITIAL_ARENA_SIZE 16777216UL // 16 MB
-#define ARENA_DICTIONARY_SIZE 256UL // 256 B
+#define ARENA_MEMORY_SIZE 16777216UL // 16 MB
+#define ARENA_TREE_SIZE 32768UL // 32 KB
 
 typedef TAG(Allocation) {
-    object location;
+    void* location;
     size_t size;
-    TAG(Allocation)* next;
-} *Allocation;
+} Allocation;
 
 TAG(ArenaStatic) {
-    void* Start;
-    size_t Tail;
-    void* last_alloc;
-    Allocation Allocs[ARENA_DICTIONARY_SIZE]; // 256 KB
+    typeof(void*) Start, LastAlloc;
+    size_t Tail, AllocCount;
+    Allocation AllocTree[ARENA_TREE_SIZE]; // 512 KB
 } static Arena = {
     .Start = NULL,
+    .LastAlloc = NULL,
+    .AllocTree = {0},
+    .AllocCount = 0,
     .Tail = 0,
-    .last_alloc = NULL,
-    .Allocs = {0},
 };
 
-static Allocation Allocs_Get(object obj)
+static void* ArenaAlloc(size_t size)
 {
-    size_t index = object_GetHashCode(obj) & (ARENA_DICTIONARY_SIZE - 1);
-    for (Allocation current = Arena.Allocs[index]; current->location; current = current->next) {
-        if (current->location == obj) {
-            return current;
-        }
-    }
-    return NULL;
+    Arena.Tail += size;
+    DEBUG_ASSERT(Arena.Tail < ARENA_MEMORY_SIZE, "Allocation exceeds maximum arena memory!\n");
+    Arena.AllocTree[Arena.AllocCount++] = (Allocation) {
+        .location = Arena.Start + Arena.Tail - size,
+        .size = size,
+    };
 }
 
-static void Allocs_Set(object obj, size_t size)
+static void ArenaDealloc(void* obj)
 {
-    size_t index = object_GetHashCode(obj) & (ARENA_DICTIONARY_SIZE - 1);
-    Allocation* current = &Arena.Allocs[index];
-    if (current) {
-        for (current = &(*current)->next; current; current = &(*current)->next) {
-            if ((*current)->location == obj) {
-                if (size == 0) {
-                    Allocation old = *current;
-                    (*current) = (*current)->next;
-                    free(old);
-                }
-                else (*current)->size = size;
-                return;
+    for (size_t i = 0; i < Arena.AllocCount; ++i) {
+        if () {
+            Arena.AllocCount -= 1;
+            for (size_t j = i; j < Arena.AllocCount; ++j) {
+                Arena.AllocTree[j] = Arena.AllocTree[j + 1];
             }
         }
-        return;
-    }
-    Allocation node = malloc(sizeof(*node));
-    *node = (TAG(Allocation)) {
-        .location = obj,
-        .size = size,
-        .next = NULL,
-    };
-    *current = node;
-}
-
-static void RemoveNodes(Allocation alloc)
-{
-    if (alloc) {
-        RemoveNodes(alloc->next);
-        free((void*)alloc);
     }
 }
 
 void ARENA_INIT(void)
 {
-    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", INITIAL_ARENA_SIZE);
+    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", ARENA_MEMORY_SIZE);
     if (Arena.Start) {
         fprintf(stderr, "WARNING: Attempt to reinitialize arena!");
         return;
     }
-    Arena.Start = malloc(INITIAL_ARENA_SIZE);
+    Arena.Start = malloc(ARENA_MEMORY_SIZE);
     if (!Arena.Start) {
         fprintf(stderr, "ERROR: Cannot allocate arena!");
         exit(EXIT_OUT_OF_MEMORY);
@@ -91,16 +66,18 @@ void ARENA_DESTROY(void)
         return;
     }
     free(Arena.Start);
-    Arena.Start = NULL;
-    for (size_t i = 0; i < ARENA_DICTIONARY_SIZE; ++i) {
-        RemoveNodes(Arena.Allocs[i]);
-    }
+    Arena = (TAG(ArenaStatic)) {
+        .Start = NULL,
+        .AllocCount = 0,
+        .AllocTree = {0},
+        .Tail = 0,
+    };
 }
 
 void* memalloc_(size_t block_size)
 {
     DEBUG_WRITELINE("Called memalloc with size %zu B. Current stack size: %zu B", block_size, Arena.Tail);
-    if (block_size == 0) return Arena.last_alloc;
+    if (block_size == 0) return Arena.LastAlloc;
 }
 
 void* zeroalloc_(size_t block_size)
