@@ -15,16 +15,15 @@ static inline int idx(char c)
     return ('A' <= c && c <= 'Z') ? c - 'A' : c - 'a';
 }
 
-#define printhashset(SOURCE) do {                                                                                   \
-    for (int i = 0, j; i < MAX_HASH_SET_ARRAY_LENGTH; ++i) {                                                        \
-        j = 0;                                                                                                      \
-        for (typeof(void*) old = (void*)1, p = SOURCE->_items[i]; old; (void)((old = p) && (p = *(void**)p)), ++j) {\
-            fprintf(stderr, "Item \033[3%dm#%d.%d\033[0m: %p\n", j + 1, i, j, p);                                   \
-        } } } while (0)
-
 // Macro to automatically throw an exception if a given parameter is null.
-#define TO_NULL_CHECK(x) if (!(x)) throw new(Exception)("Parameter {"#x"} is null");
+#define TO_NULL_CHECK(x) if (!(x)) throw new(ArgumentNullException)(#x);
 #define THROW_IF_NULL(...) do { FOREACH(TO_NULL_CHECK, __VA_ARGS__) } while (0)
+
+RetrievalTree RetrievalTree__ctor()
+{
+    RetrievalTree result = meminit(RetrievalTree) {0};
+    return result;
+}
 
 File File__ctor(string id, int score, IEnumerable(string) keywords)
 {
@@ -42,12 +41,11 @@ void RT_Add(RetrievalTree source, string keyword, File file)
 {
     THROW_IF_NULL(source, keyword, file);
     RetrievalTree current = source;
-    fprintf(stderr, "Reading ");
+    fprintf(stderr, "Reading \n");
     for (int i = 0; keyword[i]; ++i) {
         fprintf(stderr, "\033[2;%dm%c", i + 30, keyword[i]);
         if (!current->Children[idx(keyword[i])]) {
-            current->Children[idx(keyword[i])] = memalloc(RetrievalTree);
-            *current->Children[idx(keyword[i])] = (TAG(rt)){0};
+            current->Children[idx(keyword[i])] = new(RetrievalTree)();
         }
         current = current->Children[idx(keyword[i])];
     }
@@ -56,7 +54,6 @@ void RT_Add(RetrievalTree source, string keyword, File file)
     fprintf(stderr, "Adding keyword \033[32m%s\033[0m to file \033[33m%s\033[0m\n", keyword, file->ID);
     HashSet_File_Add(current->FileRefs, file);
     fprintf(stderr, "New count: %d\n", current->FileRefs->Count);
-    if (StringComparer.Ordinal.Equals(keyword, "hawkins")) printhashset(current->FileRefs);
 }
 
 void RT_Del(RetrievalTree source, string keyword, File file)
@@ -64,10 +61,10 @@ void RT_Del(RetrievalTree source, string keyword, File file)
     THROW_IF_NULL(source, keyword, file);
     RetrievalTree current = source;
     for (int i = 0; keyword[i]; ++i) {
-        if (!current->Children[idx(keyword[i])]) throw new(Exception)("Keyword does not exist (RT_Del)");
+        if (!current->Children[idx(keyword[i])]) return;
         current = current->Children[idx(keyword[i])];
     }
-    if (!current->FileRefs) throw new(Exception)("Keyword is incomplete (RT_Del)");
+    if (!current->FileRefs) return;
     fprintf(stderr, "Deleting keyword \033[32m%s\033[0m from file \033[33m%s\033[0m\n", keyword, file->ID);
     HashSet_File_Remove(current->FileRefs, file);
     fprintf(stderr, "New count: %d\n", current->FileRefs->Count);
@@ -90,7 +87,6 @@ IEnumerable(File) RT_GetRefs(RetrievalTree source, string keyword)
     }
     if (!current->FileRefs) throw new(Exception)("ERR_NOT_TERMINAL_KW");
     fprintf(stderr, "Ref count: %d\n", current->FileRefs->Count);
-    if (StringComparer.Ordinal.Equals(keyword, "hawkins")) printhashset(current->FileRefs);
     return (IEnumerable(File))current->FileRefs;
 }
 

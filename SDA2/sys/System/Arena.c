@@ -26,10 +26,41 @@ static TAG(ArenaStatic) {
     .Tail = 0,
 };
 
+static void ARENA_INIT(void)
+{
+    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", ARENA_MEMORY_SIZE);
+    if (Arena.Start) {
+        fprintf(stderr, "ERROR: Attempt to reinitialize arena!\n");
+        exit(EXIT_FAILURE);
+    }
+    Arena.Start = malloc(ARENA_MEMORY_SIZE);
+    if (!Arena.Start) {
+        fprintf(stderr, "ERROR: Cannot allocate arena!");
+        exit(EXIT_OUT_OF_MEMORY);
+    }
+}
+
+static void ARENA_DESTROY(void)
+{
+    DEBUG_WRITELINE("Called ARENA_DESTROY (Current arena size: %zu B)", Arena.Tail);
+    if (!Arena.Start) {
+        fprintf(stderr, "WARNING: Attempt to deallocate uninitialized arena!");
+        return;
+    }
+    free(Arena.Start);
+    Arena = (TAG(ArenaStatic)) {
+        .Start = NULL,
+        .AllocCount = 0,
+        .Allocs = {0},
+        .Tail = 0,
+    };
+}
+
 static Allocation ArenaAlloc(size_t block_size)
 {
     DEBUG_ASSERT(block_size > 0, "ERROR: Cannot allocate block of zero bytes!\n");
     DEBUG_ASSERT(Arena.Tail + block_size < ARENA_MEMORY_SIZE, "ERROR: Allocation of size %zu B exceeds maximum arena memory!\n", block_size);
+    if (!Arena.Start) ARENA_INIT();
     for (size_t i = 0; i < Arena.EmptySpaceCount; ++i) {
 
         // If we find a suitable empty space, perfect!
@@ -76,42 +107,13 @@ static Allocation ArenaDealloc(void* obj)
             for (size_t j = i; j < Arena.AllocCount; ++j) {
                 Arena.Allocs[j] = Arena.Allocs[j + 1];
             }
+            if (Arena.AllocCount == 0) ARENA_DESTROY();
             return Arena.EmptySpaces[Arena.EmptySpaceCount - 1];
         }
     }
 
     throw new(Exception)("ERROR: Attempt to dealloc unallocated arena memory!\n");
     return default(Allocation);
-}
-
-void ARENA_INIT(void)
-{
-    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", ARENA_MEMORY_SIZE);
-    if (Arena.Start) {
-        fprintf(stderr, "ERROR: Attempt to reinitialize arena!\n");
-        exit(EXIT_FAILURE);
-    }
-    Arena.Start = malloc(ARENA_MEMORY_SIZE);
-    if (!Arena.Start) {
-        fprintf(stderr, "ERROR: Cannot allocate arena!");
-        exit(EXIT_OUT_OF_MEMORY);
-    }
-}
-
-void ARENA_DESTROY(void)
-{
-    DEBUG_WRITELINE("Called ARENA_DESTROY (Current arena size: %zu B)", Arena.Tail);
-    if (!Arena.Start) {
-        fprintf(stderr, "WARNING: Attempt to deallocate uninitialized arena!");
-        return;
-    }
-    free(Arena.Start);
-    Arena = (TAG(ArenaStatic)) {
-        .Start = NULL,
-        .AllocCount = 0,
-        .Allocs = {0},
-        .Tail = 0,
-    };
 }
 
 void* memalloc_(size_t block_size)

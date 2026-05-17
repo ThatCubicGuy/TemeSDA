@@ -74,6 +74,10 @@ void Find(System sys, string keyword)
             Heap_File_Push(files, f);
             fprintf(stderr, "Heap count for \033[35m%s\033[0m: %d\n", keyword, files->Count);
         }
+        if (files->Count == 0) {
+            fprintf(sys->output, "EMPTY\n");
+            return;
+        }
         fprintf(sys->output, "%d ", files->Count);
         File f;
         while (Heap_File_TryPop(files, &f)) fprintf(sys->output, "%s ", f->ID);
@@ -89,7 +93,8 @@ void Find(System sys, string keyword)
 static int HighestScore(File left, File right)
 {
     // Higher scores will be placed first because Heap<T> implements a minheap
-    return right->Score - left->Score;
+    return right->Score == left->Score ? AlphabeticalById(left, right) : right->Score - left->Score;
+    // And of COURSE we need unspecified secondary ordering
 }
 
 void TopK(System sys, string keyword, int count)
@@ -101,6 +106,10 @@ void TopK(System sys, string keyword, int count)
         foreach (File f in refs) {
             Heap_File_Push(files, f);
             fprintf(stderr, "Heap count for \033[35m%s\033[0m: %d\n", keyword, files->Count);
+        }
+        if (files->Count == 0) {
+            fprintf(sys->output, "EMPTY\n");
+            return;
         }
         fprintf(sys->output, "%d ", (count > files->Count ? files->Count : count));
         File f;
@@ -133,6 +142,10 @@ void Print(System sys)
         keywords = Enumerable_string_ToList((IEnumerable(string))tmp);
         HashSet_string_Destroy(&tmp);
     } while (0);
+    if (keywords->Count == 0) {
+        fprintf(sys->output, "EMPTY\n");
+        return;
+    }
     // I know it's a bit roundabout, but it works.
     List_string_Sort(keywords, StringComparer.Ordinal.Compare);
     foreach (string kw in keywords) {
@@ -155,6 +168,10 @@ void Prefix(System sys, string prefix)
         foreach (File f in refs) {
             Heap_File_Push(files, f);
             fprintf(stderr, "Heap count for prefix \033[36m%s\033[0m: %d\n", prefix, files->Count);
+        }
+        if (files->Count == 0) {
+            fprintf(sys->output, "EMPTY\n");
+            return;
         }
         fprintf(sys->output, "%d ", files->Count);
         File f;

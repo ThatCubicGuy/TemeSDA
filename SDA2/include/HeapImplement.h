@@ -21,7 +21,7 @@ void Heap_##T##_Destroy(Heap(T) *source)                                \
 }                                                                       \
 void Heap_##T##_Push(Heap(T) source, T item)                            \
 {                                                                       \
-    if (source->Count == source->Capacity) {                            \
+    if (source->Count >= source->Capacity) {                            \
         Heap_##T##_EnsureCapacity(source, source->Capacity * 2);        \
     }                                                                   \
     source->_items[source->Count] = item;                               \
@@ -80,7 +80,8 @@ bool Heap_##T##_TryPeek(Heap(T) source, T* out)                         \
 }                                                                       \
 void Heap_##T##_TrimExcess(Heap(T) source)                              \
 {                                                                       \
-    if (source->Count < source->Capacity - source->Capacity / 10) {     \
+    if (source->Count > 0 &&                                            \
+        source->Count < source->Capacity - source->Capacity / 10) {     \
         source->_items = memresize(source->_items, source->Count);      \
         source->Capacity = source->Count;                               \
     }                                                                   \

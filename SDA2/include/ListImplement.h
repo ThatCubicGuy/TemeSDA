@@ -47,7 +47,7 @@ void List_##T##_EnsureCapacity(List(T) source, int capacity)                    
 }                                                                                               \
 void List_##T##_TrimExcess(List(T) source)                                                      \
 {                                                                                               \
-    if (source->Count < source->Capacity * 0.9) {                                               \
+    if (source->Count > 0 && source->Count < source->Capacity * 0.9) {                          \
         source->Values = memresize(source->Values, source->Count);                              \
         source->Capacity = source->Count;                                                       \
     }                                                                                           \
@@ -57,7 +57,8 @@ void List_##T##_Add(List(T) source, T item)                                     
     if (source->Count >= source->Capacity) {                                                    \
         List_##T##_EnsureCapacity(source, source->Capacity * 2);                                \
     }                                                                                           \
-    source->Values[source->Count++] = item;                                                     \
+    source->Values[source->Count] = item;                                                       \
+    source->Count += 1;                                                                         \
 }                                                                                               \
 void List_##T##_Remove(List(T) source, T item)                                                  \
 {                                                                                               \
@@ -124,7 +125,7 @@ List(T) Enumerable_##T##_ToList(IEnumerable(T) source)                          
         .Values = arralloc(T, capacity)                                                         \
     };                                                                                          \
     for (IEnumerator(T) e = source->GetEnumerator(source); e->MoveNext(e) || (e->Dispose(e), 0); ++result->Count) {   \
-        if (result->Count == capacity) {                                                        \
+        if (result->Count >= capacity) {                                                        \
             List_##T##_EnsureCapacity(result, capacity * 2);                                    \
         }                                                                                       \
         result->Values[result->Count] = e->Current;                                             \

@@ -30,3 +30,13 @@ OutOfMemoryException OutOfMemoryException__ctor(string msg, size_t size)
     result->BlockSize = size;
     return result;
 }
+
+ArgumentNullException ArgumentNullException__ctor(string paramName)
+{
+    char buf[256];
+    sprintf(buf, "Parameter {%s} is null", paramName);
+    ArgumentNullException result = (ArgumentNullException)new(Exception)(buf);
+    result = memresize(result, 1);
+    result->ArgumentName = new(string)(paramName);
+    return result;
+}

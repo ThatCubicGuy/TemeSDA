@@ -32,7 +32,7 @@ USING+=Collections/Generic
 
 # Compiler setup
 CC:=gcc
-CWARNS:=all extra no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
+CWARNS:=all extra no-missing-braces no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
 CFLAGS:=-g ${CWARNS:%=-W%} -I${HDR} -I${LIB} ${USING:%=-I${HDR}/%} -std=c17 -fms-extensions
 
 # Functions

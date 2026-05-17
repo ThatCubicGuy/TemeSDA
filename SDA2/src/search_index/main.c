@@ -104,12 +104,12 @@ int main(int argc, char** argv)
 {
     System sys = {(struct tag_System) {
         .Files = new(DoublyLinkedList(File))(),
-        .Keywords = memalloc(RetrievalTree),
+        .Keywords = new(RetrievalTree)(),
         .input = fopen("indexare.in", "rt"),
         .output = fopen("indexare.out", "wt")
     }};
     if (argc > 1 && StringComparer.Ordinal.Equals(argv[1], "-d")) {
-        printf("Running in debug mode!\n");
+        fprintf(stderr, "INFO: Running in debug mode!\n");
         sys->input = stdin;
         sys->output = stdout;
     }
@@ -124,6 +124,7 @@ int main(int argc, char** argv)
             case ADD:
                 if (Add(sys, cmd.file_id, cmd.file_score, (IEnumerable(string))cmd.file_keywords)) fprintf(sys->output, "OK\n");
                 else fprintf(sys->output, "EXISTS\n");
+                List_string_Destroy(&cmd.file_keywords);
                 break;
             case DEL:
                 if (Del(sys, cmd.file_id)) fprintf(sys->output, "OK\n");

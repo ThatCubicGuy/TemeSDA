@@ -4,7 +4,6 @@
 #include "HashSetT.h"
 #include "ListT.h"
 #include "HeapT.h"
-#include "Tuple.h"
 #include "String.h"
 
 HASH_SET_DEFINE(string)
@@ -24,11 +23,11 @@ LIST_DEFINE(File)
 HEAP_DEFINE(File)
 ENUMERABLE_DEFINE_SELECT(File, string)
 
-typedef TAG(rt) *RetrievalTree;
-TAG(rt) {
+typedef TAG(RetrievalTree) {
     HashSet(File) FileRefs;
-    RetrievalTree Children[26];
-};
+    TAG(RetrievalTree)* Children[26];
+} *RetrievalTree;
+RetrievalTree RetrievalTree__ctor();
 
 void RT_Add(RetrievalTree source, string keyword, File file);
 

@@ -112,9 +112,10 @@ void HashSet_##T##_RemoveWhere(HashSet(T) source, bool (*predicate)(T))         
 }                                                                                               \
 static void RemoveNodes_##T(HashSetEntry_##T start)                                             \
 {                                                                                               \
-    if (start) {RemoveNodes_##T(start->Next);                                                    \
-    fprintf(stderr, "Removing %p...\n", start);\
-    memfree(start);}                                                                             \
+    if (start) {                                                                                \
+        RemoveNodes_##T(start->Next);                                                           \
+        memfree(start);                                                                         \
+    }                                                                                           \
 }                                                                                               \
 void HashSet_##T##_Clear(HashSet(T) source)                                                     \
 {                                                                                               \
