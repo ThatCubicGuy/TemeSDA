@@ -2,8 +2,7 @@
 #include "Keywords.h"
 #include "System.h"
 
-#define ARENA_MEMORY_SIZE 16777216UL // 16 MB
-#define ARENA_TREE_SIZE 32768UL // 32 KB
+#define ARENA_SIZE 16777216UL // 16 MB
 
 typedef TAG(Allocation) {
     void* location;
@@ -11,47 +10,35 @@ typedef TAG(Allocation) {
 } Allocation;
 
 TAG(ArenaStatic) {
-    typeof(void*) Start, LastAlloc;
-    size_t Tail, AllocCount;
-    Allocation AllocTree[ARENA_TREE_SIZE]; // 512 KB
+    typeof(Allocation*) Start, LastAlloc;
+    size_t Tail;
 } static Arena = {
+    .Tail = 0,
     .Start = NULL,
     .LastAlloc = NULL,
-    .AllocTree = {0},
-    .AllocCount = 0,
-    .Tail = 0,
 };
 
 static void* ArenaAlloc(size_t size)
 {
     Arena.Tail += size;
-    DEBUG_ASSERT(Arena.Tail < ARENA_MEMORY_SIZE, "Allocation exceeds maximum arena memory!\n");
-    Arena.AllocTree[Arena.AllocCount++] = (Allocation) {
-        .location = Arena.Start + Arena.Tail - size,
-        .size = size,
-    };
+    DEBUG_ASSERT(Arena.Tail < ARENA_SIZE, "Allocation exceeds maximum arena memory!\n");
+    Arena.LastAlloc = Arena.Start + Arena.Tail - size;
+    return Arena.LastAlloc;
 }
 
-static void ArenaDealloc(void* obj)
-{
-    for (size_t i = 0; i < Arena.AllocCount; ++i) {
-        if () {
-            Arena.AllocCount -= 1;
-            for (size_t j = i; j < Arena.AllocCount; ++j) {
-                Arena.AllocTree[j] = Arena.AllocTree[j + 1];
-            }
-        }
-    }
-}
+// Deprecated for now
+// static void ArenaDealloc(void* obj)
+// {
+// }
 
 void ARENA_INIT(void)
 {
-    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", ARENA_MEMORY_SIZE);
+    DEBUG_WRITELINE("Called ARENA_INIT (Initial size: %zu B)", ARENA_SIZE);
     if (Arena.Start) {
         fprintf(stderr, "WARNING: Attempt to reinitialize arena!");
         return;
     }
-    Arena.Start = malloc(ARENA_MEMORY_SIZE);
+    Arena.Start = malloc(ARENA_SIZE * sizeof(Allocation));
     if (!Arena.Start) {
         fprintf(stderr, "ERROR: Cannot allocate arena!");
         exit(EXIT_OUT_OF_MEMORY);
@@ -67,9 +54,8 @@ void ARENA_DESTROY(void)
     }
     free(Arena.Start);
     Arena = (TAG(ArenaStatic)) {
+        .LastAlloc = NULL,
         .Start = NULL,
-        .AllocCount = 0,
-        .AllocTree = {0},
         .Tail = 0,
     };
 }
@@ -102,10 +88,10 @@ void memcopy_(void* dest, const void* source, size_t size)
 
 void memfree_(void* location)
 {
-    Allocation* obj = Allocs_Find(location);
-    if (!obj) return;
+    // Only thing we can free lmao
+    if (location == Arena.LastAlloc) {
 
-    *obj = default(Allocation);
+    }
 }
 
 void* memalloc_(size_t size)
