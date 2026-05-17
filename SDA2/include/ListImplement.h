@@ -2,8 +2,8 @@
 #define COLLECTIONS_GENERIC_LIST_IMPLEMENTATIONS
 
 #define LIST_IMPLEMENT(T)                                                                       \
-typedef struct ListEnumerator_##T##_s {                                                         \
-    struct tag_IEnumerator_##T _parent;                                                         \
+typedef TAG(ListEnumerator_##T) {                                                               \
+    IMPL(IEnumerator(T));                                                                       \
     int _currentIndex;                                                                          \
     List(T) _list;                                                                              \
 } *ListEnumerator_##T;                                                                          \
@@ -30,11 +30,9 @@ static IEnumerator(T) ListGetEnumerator_##T(const IEnumerable(T) This)          
 {                                                                                               \
     ListEnumerator_##T result = memalloc(ListEnumerator_##T);                                   \
     *result = init(ListEnumerator_##T) {                                                        \
-        ._parent = init(IEnumerator(T)) {                                                       \
-            .MoveNext = ListMoveNext_##T,                                                       \
-            .Reset = ListReset_##T,                                                             \
-            .Dispose = ListDispose_##T                                                          \
-        },                                                                                      \
+        .MoveNext = ListMoveNext_##T,                                                           \
+        .Reset = ListReset_##T,                                                                 \
+        .Dispose = ListDispose_##T,                                                             \
         ._currentIndex = 0,                                                                     \
         ._list = (List(T))This                                                                  \
     };                                                                                          \
@@ -99,11 +97,8 @@ void List_##T##_ForEach(List(T) source, void (*action)(T*))                     
 }                                                                                               \
 List(T) new(List(T))(int capacity)                                                              \
 {                                                                                               \
-    List(T) result = memalloc(List(T));                                                         \
-    *result = init(List(T)) {                                                                   \
-        ._parent = init(IEnumerable(T)) {                                                       \
-            .GetEnumerator = ListGetEnumerator_##T                                              \
-        },                                                                                      \
+    List(T) result = meminit(List(T)) {                                                         \
+        .GetEnumerator = ListGetEnumerator_##T,                                                 \
         .Capacity = capacity,                                                                   \
         .Count = 0,                                                                             \
     };                                                                                          \
@@ -122,11 +117,8 @@ List(T) Enumerable_##T##_ToList(IEnumerable(T) source)                          
 {                                                                                               \
     /* Assume initial capacity */                                                               \
     int capacity = 16;                                                                          \
-    List(T) result = memalloc(List(T));                                                         \
-    *result = init(List(T)) {                                                                   \
-        ._parent = init(IEnumerable(T)) {                                                       \
-            .GetEnumerator = ListGetEnumerator_##T                                              \
-        },                                                                                      \
+    List(T) result = meminit(List(T)) {                                                         \
+        .GetEnumerator = ListGetEnumerator_##T,                                                 \
         .Count = 0,                                                                             \
         .Capacity = capacity,                                                                   \
         .Values = arralloc(T, capacity)                                                         \

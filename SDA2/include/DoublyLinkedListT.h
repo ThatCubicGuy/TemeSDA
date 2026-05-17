@@ -1,17 +1,14 @@
 #ifndef COLLECTIONS_GENERIC_DOUBLY_LINKED_LIST
 #define COLLECTIONS_GENERIC_DOUBLY_LINKED_LIST
 
-#define DoublyLinkedList(T) _DoublyLinkedList_##T
+#define DoublyLinkedList(T) CAT(DoublyLinkedList_,T)
 
 #define DOUBLY_LINKED_LIST_DEFINE(T)                                        \
 /* @brief A node inside a linked list. */                                   \
-typedef struct tag_DoublyLinkedNode_##T* DoublyLinkedNode_##T;              \
+typedef TAG(DoublyLinkedNode_##T) *DoublyLinkedNode_##T;                    \
 /* @brief A list of items stored by reference. */                           \
-typedef struct tag_DoublyLinkedList_##T {                                   \
-    union {                                                                 \
-        struct tag_IEnumerable_##T _parent;                                 \
-        struct tag_IEnumerable_##T;                                         \
-    };                                                                      \
+typedef TAG(DoublyLinkedList(T)) {                                          \
+    IMPL(IEnumerable(T));                                                   \
     DoublyLinkedNode_##T _start;                                            \
     int Count;                                                              \
 } *DoublyLinkedList(T);                                                     \

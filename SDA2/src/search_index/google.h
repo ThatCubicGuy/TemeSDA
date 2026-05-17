@@ -2,10 +2,13 @@
 #define GOOGLE
 #include "retree.h"
 #include "DoublyLinkedListT.h"
+#include <stdio.h>
 DOUBLY_LINKED_LIST_DEFINE(File)
 typedef struct tag_System {
     DoublyLinkedList(File) Files;
     RetrievalTree Keywords;
+    // I dislike C pointer declaration syntax.
+    typeof(FILE*) input, output;
 } System[1];
 
 /**
@@ -13,7 +16,7 @@ typedef struct tag_System {
  * If the file already exists, fails.
  * @returns True if the file was added, false if it already exists.
  */
-bool Add(System sys, string id, int score, string keywords[], int keyword_count);
+bool Add(System sys, string id, int score, IEnumerable(string) keywords);
 /**
  * @brief Removes a file from the system.
  * If the file does not exist, fails.
@@ -41,11 +44,16 @@ bool DelKW(System sys, string id, string keyword);
  * The results are sorted alphabetically.
  * @returns True if the file exists, false otherwise.
  */
-bool Find(System sys, string keyword);
+Heap(File) Find(System sys, string keyword);
 
 /**
  * @brief Finds the top k words associated with a keyword
  */
-Heap(File) TopK(System sys, string keyword, int k);
+Heap(File) TopK(System sys, string keyword);
+
+/**
+ * @brief Prints everything in the retrieval tree.
+ */
+void Print(System sys);
 
 #endif

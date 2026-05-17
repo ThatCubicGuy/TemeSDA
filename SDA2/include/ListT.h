@@ -1,16 +1,13 @@
 #ifndef COLLECTIONS_GENERIC_LIST
 #define COLLECTIONS_GENERIC_LIST
 
-#define List(T) _List_##T
+#define List(T) CAT(List_,T)
 
 #pragma region Define
 
 #define LIST_DEFINE(T)                                              \
-typedef struct tag_List_##T {                                       \
-    union {                                                         \
-        struct tag_IEnumerable_##T _parent;                         \
-        struct tag_IEnumerable_##T;                                 \
-    };                                                              \
+typedef TAG(List(T)) {                                              \
+    IMPL(IEnumerable(T));                                           \
     int Capacity;                                                   \
     int Count;                                                      \
     T* Values;                                                      \

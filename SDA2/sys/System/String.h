@@ -67,5 +67,13 @@ string string_Concat(string first, string second);
  * @pure
  */
 string string_Format(string format, ...);
-
+#ifdef IEnumerable
+ENUMERABLE_DEFINE(string)
+/**
+ * @brief Joins the values of a string collection into one string,
+ * using the specified separator.
+ * @pure
+ */
+string string_Join(string separator, IEnumerable(string) values);
+#endif
 #endif

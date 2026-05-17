@@ -1,13 +1,11 @@
 # File organisation
 
-# TODO: header dependencies
-
 ## Parent source folder. Sources may be placed here directly to be compiled solo
 ## or in a subfolder to be compiled together with every other file in that folder
 SRC:=src
 ## Binaries folder. Compiled and linked executables are created here.
 BIN:=.bin
-## Object files folder. Compiled but unlinked executables are created here.
+## Object files folder. Compiled but unlinked binaries are created here.
 OBJ:=.obj
 ## Library folder. Universal dependencies may be placed here,
 ## with the same compilation logic as source files.
@@ -16,6 +14,8 @@ LIB:=sys
 LIBOBJ:=${OBJ}/${LIB}
 ## Header files folder.
 HDR:=include
+## Header files.
+HDRFILES:=$(wildcard ${HDR}/*.h)
 
 FOLDERS:=${SRC} ${BIN} ${OBJ} ${LIBOBJ} ${HDR}
 OBJECTS:=$(sort $(patsubst ${SRC}/%.c,${OBJ}/%.o,$(wildcard ${SRC}/*.c) $(wildcard ${SRC}/*/*.c)))
@@ -26,8 +26,10 @@ EXES:=${OBJFOLDERS:${OBJ}/%=${BIN}/%.exe} $(patsubst ${SRC}/%.c,${BIN}/%.exe,$(w
 
 # Compiler setup
 CC:=gcc
-CWARNS:=all extra no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
+CWARNS:=all extra no-dangling-else #required because of one of my macros :moai:
 CFLAGS:=${CWARNS:%=-W%} -I${HDR} -I${LIB} -include${HDR}/Keywords.h -include${LIB}/System/String.h -std=c17 -fms-extensions
+
+build:
 
 all: ${EXES}
 
@@ -42,11 +44,11 @@ $(basename $(notdir ${EXES})): %: ${BIN}/%.exe
 ${EXES}: $$(filter $$(basename $$(patsubst ${BIN}/%,${OBJ}/%,$$@))%,${OBJFOLDERS} ${OBJECTS}) ${LIBOBJECTS} | ${BIN}
 	${CC} ${CFLAGS} $(filter %.o,$^) -o $@
 
-${OBJECTS}: ${OBJ}/%.o: ${SRC}/%.c | ${OBJ}
+${OBJECTS}: ${OBJ}/%.o: ${SRC}/%.c ${HDRFILES} | ${OBJ}
 	${CC} ${CFLAGS} -c $< -o $@
 
 .SECONDEXPANSION:
-${LIBOBJECTS}: ${LIBOBJ}/%.o: ${LIB}/%.c $(wildcard ${HDR}/*.h) $$(wildcard $$(subst ${LIBOBJ},${LIB},$$(dir $$@))/*.h) | ${LIBFOLDERS} ${LIBOBJ}
+${LIBOBJECTS}: ${LIBOBJ}/%.o: ${LIB}/%.c ${HDRFILES} $$(wildcard $$(subst ${LIBOBJ},${LIB},$$(dir $$@))/*.h) | ${LIBFOLDERS} ${LIBOBJ}
 	${CC} ${CFLAGS} -c $< -o $@
 
 ${OBJFOLDERS}: | ${OBJ}

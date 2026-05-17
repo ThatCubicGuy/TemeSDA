@@ -3,19 +3,20 @@
 #include <stdbool.h>
 #pragma region Define
 
-#define IEnumerator(T) _IEnumerator_##T
-#define IEnumerable(T) _IEnumerable_##T
+#define IEnumerator(T) CAT(IEnumerator_,T)
+#define IEnumerable(T) CAT(IEnumerable_,T)
 
 #define ENUMERABLE_DEFINE(T)                                                                            \
-typedef struct tag_IEnumerator_##T {                                                                    \
-    bool (*MoveNext)(struct tag_IEnumerator_##T* This);                                                 \
-    void (*Reset)(struct tag_IEnumerator_##T* This);                                                    \
-    void (*Dispose)(struct tag_IEnumerator_##T* This);                                                  \
+typedef TAG(IEnumerator(T)) {                                                                           \
+    bool (*MoveNext)(TAG(IEnumerator(T))* This);                                                        \
+    void (*Reset)(TAG(IEnumerator(T))* This);                                                           \
+    void (*Dispose)(TAG(IEnumerator(T))* This);                                                         \
     T Current;                                                                                          \
 } *IEnumerator(T);                                                                                      \
-typedef struct tag_IEnumerable_##T {                                                                    \
-    IEnumerator(T) (*GetEnumerator)(struct tag_IEnumerable_##T* This);                                  \
-} *IEnumerable(T);                                                                                      \
+typedef TAG(IEnumerable(T)) {                                                                           \
+    IEnumerator(T) (*GetEnumerator)(TAG(IEnumerable(T)) const* This);                                   \
+} const *IEnumerable(T);                                                                                \
+extern struct tag_IEnumerable_##T Enumerable_##T##_Empty[1];                                            \
 /**                                                                                                     \
  * @brief Filters a sequence based on a predicate.                                                      \
  * @param source Enumerable to filter.                                                                  \
@@ -137,7 +138,7 @@ bool Enumerable_##T##_SequenceEqual(IEnumerable(T) first, IEnumerable(T) second)
  * @param source Enumerable to project.                                     \
  * @return A new enumerable.                                                \
  */                                                                         \
-IEnumerable(int_##T) Enumerable_##T##_Index(IEnumerable(T) source);
+IEnumerable(t(int,T)) Enumerable_##T##_Index(IEnumerable(T) source);
 
 #define ENUMERABLE_DEFINE_SELECT(TSource, TResult)                          \
 /**                                                                         \
@@ -155,9 +156,7 @@ IEnumerable(TResult) Enumerable_##TSource##_Select_##TResult(IEnumerable(TSource
  * @param selector Function to apply to each element and its index.         \
  * @return A new enumerable.                                                \
  */                                                                         \
-IEnumerable(TResult) Enumerable_##TSource##_SelectIndex_##TResult(IEnumerable(TSource) source, TResult (*selector)(TSource, int));
-
-#define ENUMERABLE_DEFINE_SELECTMANY(TSource, TResult)                      \
+IEnumerable(TResult) Enumerable_##TSource##_SelectIndex_##TResult(IEnumerable(TSource) source, TResult (*selector)(TSource, int)); \
 /**                                                                         \
  * @brief Projects each element of the collection into a new collection,    \
  * then flattens the result into a single collection.                       \

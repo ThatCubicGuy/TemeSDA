@@ -1,21 +1,18 @@
 #ifndef COLLECTIONS_GENERIC_HASH_SET
 #define COLLECTIONS_GENERIC_HASH_SET
 
-#define HashSet(T) _HashSet_##T
+#define HashSet(T) CAT(HashSet_,T)
 
 #pragma region Define
 
 #define MAX_HASH_SET_ARRAY_LENGTH 64
 #define HASH_SET_DEFINE(T)                                          \
-typedef struct tag_HashSetEntry_##T *HashSetEntry_##T;              \
-typedef struct tag_HashSet_##T {                                    \
-    union {                                                         \
-        struct tag_IEnumerable_##T _parent;                         \
-        struct tag_IEnumerable_##T;                                 \
-    };                                                              \
+typedef TAG(HashSetEntry_##T) *HashSetEntry_##T;                    \
+typedef TAG(HashSet(T)) {                                           \
+    IMPL(IEnumerable(T));                                           \
     int Count;                                                      \
     IEqualityComparer(T) Comparer;                                  \
-    HashSetEntry_##T Values[MAX_HASH_SET_ARRAY_LENGTH];             \
+    HashSetEntry_##T _items[MAX_HASH_SET_ARRAY_LENGTH];             \
 } *HashSet(T);                                                      \
 /**                                                                 \
  * @brief Creates a new HashSet with the given capacity.            \
@@ -33,7 +30,7 @@ void HashSet_##T##_Destroy(HashSet(T)* source);                     \
  * @param source Enumerable to take items from.                     \
  * @return A new hash set.                                          \
  */                                                                 \
-HashSet(T) Enumerable_##T##_ToHashSet(IEnumerable(T) source);       \
+HashSet(T) Enumerable_##T##_ToHashSet(IEnumerable(T) source, IEqualityComparer(T) comparer);\
 /**                                                                 \
  * @brief Add an element to the HashSet<T>.                         \
  * @param list HashSet to add an element to.                        \

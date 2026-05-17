@@ -115,3 +115,15 @@ string string_Concat(string first, string second)
     ((char*)result)[length] = 0;
     return result;
 }
+
+#include <stdarg.h>
+#include <stdio.h>
+string string_Format(string format, ...)
+{
+    char buf[8192];
+    va_list argv;
+    va_start(argv, format);
+    vsprintf(buf, format, argv);
+    va_end(argv);
+    return new(string)(buf);
+}

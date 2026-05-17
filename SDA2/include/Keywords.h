@@ -57,9 +57,11 @@ void memfree_(void* location);
 #define arralloc(ARR_TYPE, LEN) ((typeof(ARR_TYPE)*)zeroalloc_(sizeof(ARR_TYPE) * LEN))
 #define memresize(ARR, NEWLEN) ((typeof(ARR))memresize_(ARR, sizeof(*(ARR)) * NEWLEN))
 #define boxalloc(STRUCT) ((typeof(STRUCT)*)memalloc_(sizeof(STRUCT)))
-#define memfree(PTR) memfree_(PTR);
+#define memfree(PTR) memfree_(PTR)
 
 #define init(CLASS) (typeof(*(CLASS)0))
+
+#define meminit(CLASS) memalloc(CLASS); *(CLASS)memalloc_(0) = init(CLASS)
 
 #pragma endregion
 
@@ -81,26 +83,27 @@ typedef struct tag_IComparer_##T {  \
 bool object_Equals(size_t, object, object);
 bool object_ReferenceEquals(object, object);
 size_t object_GetHashCode(object obj);
+
 EQUALITY_COMPARER_DEFINE(object);
-const struct tag_IEqualityComparer_object ObjectEquator[1] = {{
-    .Equals = object_ReferenceEquals,
-    .GetHashCode = object_GetHashCode
-}};
+extern const struct tag_IEqualityComparer_object ObjectEquator[1];
+
 #define equals(LEFT, RIGHT) (sizeof(typeof(LEFT)) == sizeof(typeof(RIGHT)) && object_Equals(sizeof(typeof(LEFT)), &LEFT, &RIGHT))
 
 #pragma endregion
 
-#define NEW_I(TYPE) TYPE##__ctor
-#define new(TYPE) NEW_I(TYPE)
+#include "Macros.h"
+
+#define new(TYPE) CAT(TYPE,__ctor)
 
 #define default(TYPE) ((TYPE){0})
-#define out(TYPE) TYPE* const
 
 // Solves double macro argument use, but can no longer be used as an expression
 // #define dispose(x) do { var _to_dispose = (x); _to_dispose->Dispose(_to_dispose); } while(0)
 #define dispose(x) (x)->Dispose(x)
-
-#include "Macros.h"
+// Represents the underlying tag of a typedef variable.
+#define TAG(REF_TYPE) struct CAT(tag_,REF_TYPE)
+// Implements an interface inside a type.
+#define IMPL(REF_TYPE) union { TAG(REF_TYPE) CAT(impl_,REF_TYPE); TAG(REF_TYPE); }
 
 #define JMP_TO_FIN_THEN if(!setjmp(_finally_return_longjmp_buf)) StackTrace_Finally(STACKTRACE_SET), longjmp(_finally_longjmp_buf, 1); else
 #define finally_return(ITEM) do { var _retval = (ITEM); JMP_TO_FIN_THEN return _retval; } while(0)

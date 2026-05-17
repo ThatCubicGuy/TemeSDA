@@ -13,14 +13,14 @@ void* memalloc_(size_t size)
 
 void* zeroalloc_(size_t size)
 {
-    if (size == 0) throw(new(Exception)("Cannot allocate block of size 0!"));
+    if (size == 0) throw(new(Exception)("Cannot allocate block of size 0! (zeroalloc)"));
     last_alloc = calloc(1, size);
     return last_alloc ? last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size)), NULL);
 }
 
 void* memresize_(void* object, size_t new_size)
 {
-    if (new_size == 0) throw(new(Exception)("Cannot allocate block of size 0!"));
+    if (new_size == 0) throw(new(Exception)("Cannot allocate block of size 0! (memresize)"));
     last_alloc = realloc(object, new_size);
     return last_alloc ? last_alloc : (throw(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", new_size)), NULL);
 }
