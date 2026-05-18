@@ -67,27 +67,22 @@ static int AlphabeticalById(File left, File right)
 void Find(System sys, string keyword)
 {
     // Use heap in find as well just because it's an easier way of storing items "in order"
-    try {
-        IEnumerable(File) refs = RT_GetRefs(sys->Keywords, keyword);
-        Heap(File) files = new(Heap(File))(16, 4, AlphabeticalById);
-        foreach (File f in refs) {
-            Heap_File_Push(files, f);
-            fprintf(stderr, "Heap count for \033[35m%s\033[0m: %d\n", keyword, files->Count);
-        }
-        if (files->Count == 0) {
-            fprintf(sys->output, "EMPTY\n");
-            return;
-        }
-        fprintf(sys->output, "%d ", files->Count);
-        File f;
-        while (Heap_File_TryPop(files, &f)) fprintf(sys->output, "%s ", f->ID);
-        fprintf(sys->output, "\n");
-        Heap_File_Destroy(&files);
-    } catch (Exception ex) {
-        if (StringComparer.Ordinal.Equals("ERR_NOT_TERMINAL_KW", ex->Message)) {
-            fprintf(sys->output, "EMPTY\n");
-        } else throw ex;
+    IEnumerable(File) refs = RT_GetRefs(sys->Keywords, keyword);
+    Heap(File) files = new(Heap(File))(16, 4, AlphabeticalById);
+    foreach (File f in refs) {
+        Heap_File_Push(files, f);
+        fprintf(stderr, "Heap count for \033[35m%s\033[0m: %d\n", keyword, files->Count);
     }
+    if (files->Count == 0) {
+        fprintf(stderr, "WARNING: Keyword %s has no references (Find)\n", keyword);
+        fprintf(sys->output, "EMPTY\n");
+        return;
+    }
+    fprintf(sys->output, "%d ", files->Count);
+    File f;
+    while (Heap_File_TryPop(files, &f)) fprintf(sys->output, "%s ", f->ID);
+    fprintf(sys->output, "\n");
+    Heap_File_Destroy(&files);
 }
 
 static int HighestScore(File left, File right)
@@ -99,28 +94,23 @@ static int HighestScore(File left, File right)
 
 void TopK(System sys, string keyword, int count)
 {
-    try {
-        IEnumerable(File) refs = RT_GetRefs(sys->Keywords, keyword);
-        // Quaternary heaps are generally just better than binary or ternary heaps
-        Heap(File) files = new(Heap(File))(16, 4, HighestScore);
-        foreach (File f in refs) {
-            Heap_File_Push(files, f);
-            fprintf(stderr, "Heap count for \033[35m%s\033[0m: %d\n", keyword, files->Count);
-        }
-        if (files->Count == 0) {
-            fprintf(sys->output, "EMPTY\n");
-            return;
-        }
-        fprintf(sys->output, "%d ", (count > files->Count ? files->Count : count));
-        File f;
-        while ((count -= 1) >= 0 && Heap_File_TryPop(files, &f)) fprintf(sys->output, "%s ", f->ID);
-        fprintf(sys->output, "\n");
-        Heap_File_Destroy(&files);
-    } catch (Exception ex) {
-        if (StringComparer.Ordinal.Equals("ERR_NOT_TERMINAL_KW", ex->Message)) {
-            fprintf(sys->output, "EMPTY\n");
-        } else throw ex;
+    IEnumerable(File) refs = RT_GetRefs(sys->Keywords, keyword);
+    // Quaternary heaps are generally just better than binary or ternary heaps
+    Heap(File) files = new(Heap(File))(16, 4, HighestScore);
+    foreach (File f in refs) {
+        Heap_File_Push(files, f);
+        fprintf(stderr, "Heap count for \033[35m%s\033[0m: %d\n", keyword, files->Count);
     }
+    if (files->Count == 0) {
+        fprintf(stderr, "WARNING: Keyword %s has no references (TopK)\n", keyword);
+        fprintf(sys->output, "EMPTY\n");
+        return;
+    }
+    fprintf(sys->output, "%d ", (count > files->Count ? files->Count : count));
+    File f;
+    while ((count -= 1) >= 0 && Heap_File_TryPop(files, &f)) fprintf(sys->output, "%s ", f->ID);
+    fprintf(sys->output, "\n");
+    Heap_File_Destroy(&files);
 }
 
 static IEnumerable(string) GetKeywordsOfFile(File f)
@@ -143,6 +133,7 @@ void Print(System sys)
         HashSet_string_Destroy(&tmp);
     } while (0);
     if (keywords->Count == 0) {
+        fprintf(stderr, "\033[1;33mWARNING\033[0m: No keywords in system\n");
         fprintf(sys->output, "EMPTY\n");
         return;
     }
@@ -162,27 +153,22 @@ void Print(System sys)
 
 void Prefix(System sys, string prefix)
 {
-    try {
-        IEnumerable(File) refs = RT_GetPrefix(sys->Keywords, prefix);
-        Heap(File) files = new(Heap(File))(16, 4, AlphabeticalById);
-        foreach (File f in refs) {
-            Heap_File_Push(files, f);
-            fprintf(stderr, "Heap count for prefix \033[36m%s\033[0m: %d\n", prefix, files->Count);
-        }
-        if (files->Count == 0) {
-            fprintf(sys->output, "EMPTY\n");
-            return;
-        }
-        fprintf(sys->output, "%d ", files->Count);
-        File f;
-        while (Heap_File_TryPop(files, &f)) fprintf(sys->output, "%s ", f->ID);
-        fprintf(sys->output, "\n");
-        Heap_File_Destroy(&files);
-    } catch (Exception ex) {
-        if (StringComparer.Ordinal.Equals("ERR_NOT_TERMINAL_KW", ex->Message)) {
-            fprintf(sys->output, "EMPTY\n");
-        } else throw ex;
+    IEnumerable(File) refs = RT_GetPrefix(sys->Keywords, prefix);
+    Heap(File) files = new(Heap(File))(16, 4, AlphabeticalById);
+    foreach (File f in refs) {
+        Heap_File_Push(files, f);
+        fprintf(stderr, "Heap count for prefix \033[36m%s\033[0m: %d\n", prefix, files->Count);
     }
+    if (files->Count == 0) {
+        fprintf(stderr, "WARNING: Prefix %s has no references (TopK)\n", prefix);
+        fprintf(sys->output, "EMPTY\n");
+        return;
+    }
+    fprintf(sys->output, "%d ", files->Count);
+    File f;
+    while (Heap_File_TryPop(files, &f)) fprintf(sys->output, "%s ", f->ID);
+    fprintf(sys->output, "\n");
+    Heap_File_Destroy(&files);
 }
 
 #include "EnumerableImplement.h"

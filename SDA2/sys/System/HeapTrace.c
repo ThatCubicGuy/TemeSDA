@@ -3,7 +3,8 @@
 #if ALLOC_TYPE == HEAP_ALLOC
 
 // God I need a garbage collector...
-#define HEAPTRACE_SIZE 4096
+#define HEAPTRACE_SIZE 16384ul
+
 TAG(HeapTrace) {
     size_t alloc_count;
     void* allocs[HEAPTRACE_SIZE];
@@ -19,7 +20,7 @@ void* memalloc_(size_t size)
     if (size == 0) return HeapTrace.alloc_count > 0 ? HeapTrace.allocs[HeapTrace.alloc_count - 1] : throwe(new(Exception)("No last allocation to get!"));
     DEBUG_ASSERT(HeapTrace.alloc_count >= 0 && HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "Heap alloc count: %zu\n", HeapTrace.alloc_count);
     HeapTrace.allocs[HeapTrace.alloc_count] = malloc(size);
-    return HeapTrace.allocs[HeapTrace.alloc_count] ? HeapTrace.allocs[HeapTrace.alloc_count++] : throwe(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size));
+    return HeapTrace.allocs[HeapTrace.alloc_count] ? HeapTrace.allocs[HeapTrace.alloc_count++] : throwe(new(OutOfMemoryException)(size));
 }
 
 void* zeroalloc_(size_t size)
@@ -28,7 +29,7 @@ void* zeroalloc_(size_t size)
     if (size == 0) throw new(Exception)("Cannot allocate block of size 0! (zeroalloc)");
     DEBUG_ASSERT(HeapTrace.alloc_count >= 0 && HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "Heap alloc count: %zu\n", HeapTrace.alloc_count);
     HeapTrace.allocs[HeapTrace.alloc_count] = calloc(1, size);
-    return HeapTrace.allocs[HeapTrace.alloc_count] ? HeapTrace.allocs[HeapTrace.alloc_count++] : throwe(new(OutOfMemoryException)("Not enough memory to allocate block of %d bytes", size));
+    return HeapTrace.allocs[HeapTrace.alloc_count] ? HeapTrace.allocs[HeapTrace.alloc_count++] : throwe(new(OutOfMemoryException)(size));
 }
 
 void* memresize_(void* obj, size_t new_size)
@@ -39,7 +40,7 @@ void* memresize_(void* obj, size_t new_size)
     for (size_t i = 0; i < HeapTrace.alloc_count; ++i) {
         if (HeapTrace.allocs[i] == obj) {
             void* last_alloc = realloc(obj, new_size);
-            return last_alloc ? HeapTrace.allocs[i] = last_alloc : throwe(new(OutOfMemoryException)("Not enough memory to reallocate to new block of %d bytes", new_size));
+            return last_alloc ? HeapTrace.allocs[i] = last_alloc : throwe(new(OutOfMemoryException)(new_size));
         }
     }
     throw new(Exception)("Reallocation of unallocated memory!");

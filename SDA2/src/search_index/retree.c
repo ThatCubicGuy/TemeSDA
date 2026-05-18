@@ -15,10 +15,6 @@ static inline int idx(char c)
     return ('A' <= c && c <= 'Z') ? c - 'A' : c - 'a';
 }
 
-// Macro to automatically throw an exception if a given parameter is null.
-#define TO_NULL_CHECK(x) if (!(x)) throw new(ArgumentNullException)(#x);
-#define THROW_IF_NULL(...) do { FOREACH(TO_NULL_CHECK, __VA_ARGS__) } while (0)
-
 RetrievalTree RetrievalTree__ctor()
 {
     RetrievalTree result = meminit(RetrievalTree) {0};
@@ -27,7 +23,7 @@ RetrievalTree RetrievalTree__ctor()
 
 File File__ctor(string id, int score, IEnumerable(string) keywords)
 {
-    THROW_IF_NULL(id, keywords);
+    ThrowIfNull(id, keywords);
     File result = memalloc(File);
     *result = init(File) {
         .ID = new(string)(id),
@@ -39,9 +35,9 @@ File File__ctor(string id, int score, IEnumerable(string) keywords)
 
 void RT_Add(RetrievalTree source, string keyword, File file)
 {
-    THROW_IF_NULL(source, keyword, file);
+    ThrowIfNull(source, keyword, file);
     RetrievalTree current = source;
-    fprintf(stderr, "Reading \n");
+    fprintf(stderr, "Reading ");
     for (int i = 0; keyword[i]; ++i) {
         fprintf(stderr, "\033[2;%dm%c", i + 30, keyword[i]);
         if (!current->Children[idx(keyword[i])]) {
@@ -58,7 +54,7 @@ void RT_Add(RetrievalTree source, string keyword, File file)
 
 void RT_Del(RetrievalTree source, string keyword, File file)
 {
-    THROW_IF_NULL(source, keyword, file);
+    ThrowIfNull(source, keyword, file);
     RetrievalTree current = source;
     for (int i = 0; keyword[i]; ++i) {
         if (!current->Children[idx(keyword[i])]) return;
@@ -78,14 +74,14 @@ void RT_Del(RetrievalTree source, string keyword, File file)
 
 IEnumerable(File) RT_GetRefs(RetrievalTree source, string keyword)
 {
-    THROW_IF_NULL(source, keyword);
+    ThrowIfNull(source, keyword);
     RetrievalTree current = source;
     fprintf(stderr, "Getting all references for keyword \033[32m%s\033[0m\n", keyword);
     for (int i = 0; keyword[i]; ++i) {
         current = current->Children[idx(keyword[i])];
         if (!current) return Enumerable_File_Empty;
     }
-    if (!current->FileRefs) throw new(Exception)("ERR_NOT_TERMINAL_KW");
+    if (!current->FileRefs) return Enumerable_File_Empty;
     fprintf(stderr, "Ref count: %d\n", current->FileRefs->Count);
     return (IEnumerable(File))current->FileRefs;
 }
@@ -105,7 +101,7 @@ static void FindFiles(RetrievalTree source, HashSet(File) result)
 
 IEnumerable(File) RT_GetPrefix(RetrievalTree source, string prefix)
 {
-    THROW_IF_NULL(source, prefix);
+    ThrowIfNull(source, prefix);
     RetrievalTree current = source;
     fprintf(stderr, "Getting all references for prefix \033[35m%s\033[0m\n", prefix);
     for (int i = 0; prefix[i]; ++i) {

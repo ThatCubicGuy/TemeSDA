@@ -152,10 +152,11 @@ int main(int argc, char** argv)
                 break;
             }
         }
-    }
-    catch (Exception ex) {
+    } catch (Exception ex) {
         fprintf(stderr, "Exception thrown: ");
         fprintf(stderr, "%s\n", ex->Message);
+        fprintf(stderr, "In file: \"%s\"\n", ex->File);
+        fprintf(stderr, "At line: %d\n", ex->Line);
         fprintf(stderr, "Program interrupted.\n");
         return 1;
     }

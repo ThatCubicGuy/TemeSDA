@@ -3,8 +3,6 @@
 
 #pragma region Stack Trace
 
-#define STACKTRACE_SIZE 256
-
 static TAG(StackTraceStatic) {
     Exception LastThrownException;
     int Tail;

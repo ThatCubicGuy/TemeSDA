@@ -12,3 +12,5 @@
 
 #undef DEBUG_ASSERT
 #define DEBUG_ASSERT(CONDITION, ...) do { if(!(CONDITION)) { char buf[1024] = {0}; __VA_OPT__(sprintf(buf, "Assert failed: "#CONDITION __VA_ARGS__);) throw new(Exception)(buf); } } while (0)
+
+#define STACKTRACE_SIZE 256

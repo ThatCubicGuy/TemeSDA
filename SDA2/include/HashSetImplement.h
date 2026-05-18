@@ -52,6 +52,7 @@ static IEnumerator(T) HashSetGetEnumerator_##T(IEnumerable(T) This)             
 }                                                                                               \
 void HashSet_##T##_Add(HashSet(T) source, T item)                                               \
 {                                                                                               \
+    ThrowIfNull(source);                                                                        \
     HashSetEntry_##T node = meminit(HashSetEntry_##T) {                                         \
         .Hash = source->Comparer->GetHashCode(item),                                            \
         .Value = item,                                                                          \
@@ -70,6 +71,7 @@ void HashSet_##T##_Add(HashSet(T) source, T item)                               
 }                                                                                               \
 bool HashSet_##T##_Remove(HashSet(T) source, T item)                                            \
 {                                                                                               \
+    ThrowIfNull(source);                                                                        \
     size_t hash = source->Comparer->GetHashCode(item);                                          \
     size_t index = hash % MAX_HASH_SET_ARRAY_LENGTH;                                            \
     HashSetEntry_##T bucket = source->_items[index], old = bucket;                              \
@@ -91,6 +93,7 @@ bool HashSet_##T##_Remove(HashSet(T) source, T item)                            
 }                                                                                               \
 void HashSet_##T##_RemoveWhere(HashSet(T) source, bool (*predicate)(T))                         \
 {                                                                                               \
+    ThrowIfNull(source, predicate);                                                             \
     for (size_t i = 0; i < MAX_HASH_SET_ARRAY_LENGTH; ++i) {                                    \
         HashSetEntry_##T bucket = source->_items[i], old = bucket;                              \
         while (bucket && predicate(bucket->Value)) {                                            \
@@ -119,6 +122,7 @@ static void RemoveNodes_##T(HashSetEntry_##T start)                             
 }                                                                                               \
 void HashSet_##T##_Clear(HashSet(T) source)                                                     \
 {                                                                                               \
+    ThrowIfNull(source);                                                                        \
     for (int i = 0; i < MAX_HASH_SET_ARRAY_LENGTH; ++i) {                                       \
         RemoveNodes_##T(source->_items[i]);                                                     \
         source->_items[i] = NULL;                                                               \
@@ -127,6 +131,7 @@ void HashSet_##T##_Clear(HashSet(T) source)                                     
 }                                                                                               \
 bool HashSet_##T##_Contains(HashSet(T) source, T item)                                          \
 {                                                                                               \
+    ThrowIfNull(source);                                                                        \
     size_t hash = source->Comparer->GetHashCode(item);                                          \
     size_t index = hash % MAX_HASH_SET_ARRAY_LENGTH;                                            \
     HashSetEntry_##T bucket = source->_items[index];                                            \
@@ -138,6 +143,7 @@ bool HashSet_##T##_Contains(HashSet(T) source, T item)                          
 }                                                                                               \
 HashSet(T) new(HashSet(T))(IEqualityComparer(T) comparer)                                       \
 {                                                                                               \
+    ThrowIfNull(comparer);                                                                      \
     HashSet(T) result = meminit(HashSet(T)) {                                                   \
         .GetEnumerator = HashSetGetEnumerator_##T,                                              \
         .Comparer = comparer,                                                                   \
@@ -147,12 +153,14 @@ HashSet(T) new(HashSet(T))(IEqualityComparer(T) comparer)                       
 }                                                                                               \
 void HashSet_##T##_Destroy(HashSet(T)* set)                                                     \
 {                                                                                               \
+    ThrowIfNull(set, *set);                                                                     \
     HashSet_##T##_Clear(*set);                                                                  \
     memfree(*set);                                                                              \
     *set = NULL;                                                                                \
 }                                                                                               \
 HashSet(T) Enumerable_##T##_ToHashSet(IEnumerable(T) source, IEqualityComparer(T) comparer)     \
 {                                                                                               \
+    ThrowIfNull(source, comparer);                                                              \
     HashSet(T) result = new(HashSet(T))(comparer);                                              \
     for (IEnumerator(T) e = source->GetEnumerator(source); e->MoveNext(e) || (e->Dispose(e), 0);) { \
         HashSet_##T##_Add(result, e->Current);                                                  \

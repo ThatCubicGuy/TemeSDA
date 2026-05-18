@@ -96,6 +96,7 @@ string string_Concat(string first, string second)
 {
     int length = string_Length(first) + string_Length(second);
     string result = arralloc(char, length + 1);
+    if (!result) throw new(OutOfMemoryException)(length + 1);
     int i = 0;
     while (first[i]) {
         ((char*)result)[i] = first[i];
@@ -143,8 +144,9 @@ string string_Join(string separator, IEnumerable(string) values)
         (IEnumerable(string))(list),
         string_Length(separator) * (list->Count - 1),
         sumLengths);
-    string first = list->Values[0];
+    string first = index(list, 0);
     string result = arralloc(char, totalLength + 1);
+    if (!result) throw new(OutOfMemoryException)(totalLength + 1);
     memcopy((char*)(result + string_Length(result)), first, string_Length(first));
     List_string_Remove(list, first);
     foreach (string str in list) {
