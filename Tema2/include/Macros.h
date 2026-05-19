@@ -23,23 +23,23 @@
 // Posted by Nero
 // Retrieved 2026-03-10, License - CC BY-SA 4.0
 
-#define __VANISH__
+#define __VANISH
 #define __ESC_I(...) __VAN##__VA_ARGS__
 #define __ESC(...) __ESC_I(__VA_ARGS__)
-#define ISH__(...) ISH__ __VA_ARGS__
-#define DEPAREN(x) __ESC(ISH__ x)
+#define ISH(...) ISH __VA_ARGS__
+#define DEPAREN(x) __ESC(ISH x)
 
 // #define IFNEMPTY(x, ELSE...)
 
 #define __APPEND_COMMA(...) __VA_OPT__(__VA_ARGS__,)
 #define __PREPEND_COMMA(...) __VA_OPT__(,__VA_ARGS__)
-#define TRIMEND(x, ...) x __PREPEND_COMMA(__VA_ARGS__)
+#define TRIMEND(...) EXTRACT(CAT(DEC_,NARGS(__VA_ARGS__)),__VA_ARGS__) __PREPEND_COMMA(SELECT(CAT(DEC_,NARGS(__VA_ARGS__)),__VA_ARGS__))
 #define TRIMSTART(x, ...) __APPEND_COMMA(x) __VA_ARGS__
 #define TRIM(...) TRIMEND(TRIMSTART(__VA_ARGS__))
 
 #define APPEND(ARG,ARGS) (TRIMSTART(DEPAREN(ARGS), ARG))
 #define PREPEND(ARG,ARGS) (TRIMEND(ARG, DEPAREN(ARGS)))
-#define CATARGS(L_ARGS,R_ARGS) (DEFER(TRIM)(DEPAREN(L_ARGS), DEPAREN(R_ARGS)))
+#define CATARGS(L_ARGS,R_ARGS) (TRIM(EXPAND(DEPAREN(L_ARGS),DEPAREN(R_ARGS))))
 #define call(obj, METHOD_NAME, ARGS) (obj)->__VTable->METHOD_NAME(DEPAREN(PREPEND(obj,ARGS)))
 
 // EMPTY(x) ->
