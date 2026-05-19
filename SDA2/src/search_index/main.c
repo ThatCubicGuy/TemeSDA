@@ -100,7 +100,7 @@ Cmd parse_cmd(System sys, string command)
     return default(Cmd);
 }
 
-int main(int argc, char** argv)
+int start(int argc, char** argv)
 {
     System sys = {(struct tag_System) {
         .Files = new(DoublyLinkedList(File))(),

@@ -33,7 +33,8 @@ USING+=Collections/Generic
 # Compiler setup
 CC:=gcc
 CWARNS:=all extra no-missing-braces no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
-CFLAGS:=-g ${CWARNS:%=-W%} -I${HDR} -I${LIB} ${USING:%=-I${HDR}/%} -std=c17 -fms-extensions
+CEXTRAS:=ms-extensions #sanitize=address
+CFLAGS:=-std=c17 -g ${CWARNS:%=-W%} ${CEXTRAS:%=-f%} -I${HDR} -I${LIB} ${USING:%=-I${HDR}/%}
 
 # Functions
 ## Get objects relevant to $1 considering root $2 from list $3.

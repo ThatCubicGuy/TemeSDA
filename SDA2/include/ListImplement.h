@@ -62,18 +62,9 @@ List(T) Enumerable_##T##_ToList(IEnumerable(T) source)                          
 {                                                                                               \
     ThrowIfNull(source);                                                                        \
     /* Assume initial capacity */                                                               \
-    int capacity = 16;                                                                          \
-    List(T) result = meminit(List(T)) {                                                         \
-        .GetEnumerator = ListGetEnumerator_##T,                                                 \
-        .Count = 0,                                                                             \
-        .Capacity = capacity,                                                                   \
-        .Values = arralloc(T, capacity)                                                         \
-    };                                                                                          \
-    for (IEnumerator(T) e = source->GetEnumerator(source); e->MoveNext(e) || (e->Dispose(e), 0); ++result->Count) {   \
-        if (result->Count >= capacity) {                                                        \
-            List_##T##_EnsureCapacity(result, capacity * 2);                                    \
-        }                                                                                       \
-        result->Values[result->Count] = e->Current;                                             \
+    List(T) result = new(List(T))(16);                                                          \
+    foreach (T item in source) {                                                                \
+        List_##T##_Add(result, item);                                                           \
     }                                                                                           \
     List_##T##_TrimExcess(result);                                                              \
     return result;                                                                              \

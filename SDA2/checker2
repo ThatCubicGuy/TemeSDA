@@ -1,0 +1,86 @@
+Running tests...
+cp .bin/search_index.exe search_index
+Build succeeded. +5 pts
+README not found - 0/5 pts
+test01 (1.25 pts) - FAILED - see diff in tests/diff/test01.diff
+test02 (1.25 pts) - FAILED - see diff in tests/diff/test02.diff
+test03 (1.25 pts) - PASSED
+test04 (1.25 pts) - FAILED - see diff in tests/diff/test04.diff
+test05 (1.25 pts) - PASSED
+test06 (1.25 pts) - FAILED - see diff in tests/diff/test06.diff
+test07 (1.25 pts) - FAILED - see diff in tests/diff/test07.diff
+test08 (1.25 pts) - FAILED - see diff in tests/diff/test08.diff
+test09 (1.25 pts) - PASSED
+test10 (1.25 pts) - PASSED
+test11 (0.75 pts) - PASSED
+test12 (0.75 pts) - PASSED
+test13 (0.75 pts) - FAILED - see diff in tests/diff/test13.diff
+test14 (0.75 pts) - PASSED
+test15 (0.75 pts) - PASSED
+test16 (0.75 pts) - PASSED
+test17 (0.75 pts) - PASSED
+test18 (0.75 pts) - PASSED
+test19 (0.75 pts) - PASSED
+test20 (0.75 pts) - PASSED
+test21 (1.00 pts) - FAILED - see diff in tests/diff/test21.diff
+test22 (1.00 pts) - PASSED
+test23 (1.00 pts) - PASSED
+test24 (1.00 pts) - PASSED
+test25 (1.00 pts) - PASSED
+test26 (3.00 pts) - PASSED
+test27 (3.00 pts) - PASSED
+test28 (3.00 pts) - PASSED
+test29 (3.00 pts) - PASSED
+test30 (3.00 pts) - PASSED
+test31 (1.00 pts) - FAILED - see diff in tests/diff/test31.diff
+test32 (1.00 pts) - PASSED
+test33 (1.00 pts) - PASSED
+test34 (1.00 pts) - PASSED
+test35 (1.00 pts) - PASSED
+test36 (1.00 pts) - FAILED - see diff in tests/diff/test36.diff
+test37 (1.00 pts) - PASSED
+test38 (1.00 pts) - PASSED
+test39 (1.00 pts) - PASSED
+test40 (1.00 pts) - PASSED
+test41 (1.25 pts) - PASSED
+test42 (1.25 pts) - PASSED
+test43 (1.25 pts) - FAILED - see diff in tests/diff/test43.diff
+test44 (1.25 pts) - FAILED - see diff in tests/diff/test44.diff
+test45 (1.25 pts) - FAILED - see diff in tests/diff/test45.diff
+test46 (1.25 pts) - PASSED
+test47 (1.25 pts) - FAILED - see diff in tests/diff/test47.diff
+test48 (1.25 pts) - PASSED
+test49 (1.25 pts) - FAILED - see diff in tests/diff/test49.diff
+test50 (1.25 pts) - FAILED - see diff in tests/diff/test50.diff
+test51 (0.75 pts) - PASSED
+test52 (0.75 pts) - FAILED - see diff in tests/diff/test52.diff
+test53 (0.75 pts) - FAILED - see diff in tests/diff/test53.diff
+test54 (0.75 pts) - FAILED - see diff in tests/diff/test54.diff
+test55 (0.75 pts) - PASSED
+test56 (0.75 pts) - PASSED
+test57 (0.75 pts) - PASSED
+test58 (0.75 pts) - FAILED - see diff in tests/diff/test58.diff
+test59 (0.75 pts) - PASSED
+test60 (0.75 pts) - FAILED - see diff in tests/diff/test60.diff
+test61 (1.00 pts) - PASSED
+test62 (1.00 pts) - PASSED
+test63 (1.00 pts) - PASSED
+test64 (1.00 pts) - PASSED
+test65 (1.00 pts) - FAILED - see diff in tests/diff/test65.diff
+test66 (3.00 pts) - FAILED - see diff in tests/diff/test66.diff
+test67 (3.00 pts) - PASSED
+test68 (3.00 pts) - PASSED
+test69 (3.00 pts) - PASSED
+test70 (3.00 pts) - FAILED - see diff in tests/diff/test70.diff
+test71 (1.00 pts) - PASSED
+test72 (1.00 pts) - PASSED
+test73 (1.00 pts) - PASSED
+test74 (1.00 pts) - PASSED
+test75 (1.00 pts) - FAILED - see diff in tests/diff/test75.diff
+test76 (1.00 pts) - FAILED - see diff in tests/diff/test76.diff
+test77 (1.00 pts) - FAILED - see diff in tests/diff/test77.diff
+test78 (1.00 pts) - FAILED - see diff in tests/diff/test78.diff
+test79 (1.00 pts) - FAILED - see diff in tests/diff/test79.diff
+test80 (1.00 pts) - FAILED - see diff in tests/diff/test80.diff
+More than 10 tests passed - +10 pts (PRINT function)
+Score: 79.50 / 120.00

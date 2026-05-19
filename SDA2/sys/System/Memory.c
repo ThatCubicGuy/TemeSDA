@@ -41,4 +41,9 @@ void memfree_(void* address)
     free(address);
 }
 
+int main(int argc, char** argv)
+{
+    return start(argc, argv);
+}
+
 #endif

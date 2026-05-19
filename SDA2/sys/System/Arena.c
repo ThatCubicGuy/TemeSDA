@@ -160,4 +160,12 @@ void memfree_(void* address)
     ArenaDealloc(address);
 }
 
+int main(int argc, char** argv)
+{
+    ARENA_INIT(void);
+    int ret_code = start(argc, argv);
+    ARENA_DESTROY(void);
+    return ret_code;
+}
+
 #endif

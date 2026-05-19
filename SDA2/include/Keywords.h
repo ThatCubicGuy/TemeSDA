@@ -4,6 +4,12 @@
 // Enable debug info
 #define DEBUG 1
 
+#define STD_C94 1994##09L
+#define STD_C99 1999##01L
+#define STD_C11 2011##12L
+#define STD_C17 2017##10L
+#define STD_C23 2023##11L
+
 #include <stdbool.h>
 #include <stddef.h>
 #include <setjmp.h>
@@ -33,7 +39,7 @@ typedef unsigned char byte;
 
 // Deranged but plausible!
 // struct {
-//     Exception (*Exception)();
+//     Exception (*Exception)(string);
 //     ...
 // } Constructors;
 // #define new Constructors.

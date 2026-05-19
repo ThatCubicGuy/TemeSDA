@@ -30,7 +30,7 @@ static bool HashSetMoveNext_##T(IEnumerator(T) This)                            
 static void HashSetReset_##T(IEnumerator(T) This)                                               \
 {                                                                                               \
     HashSetEnumerator_##T e = (HashSetEnumerator_##T)This;                                      \
-    e->_currentIndex = -1;                                                                      \
+    e->_currentIndex = -1;                                                                       \
     e->_currentNode = NULL;                                                                     \
     This->Current = default(T);                                                                 \
 }                                                                                               \
@@ -44,7 +44,7 @@ static IEnumerator(T) HashSetGetEnumerator_##T(IEnumerable(T) This)             
         .MoveNext = HashSetMoveNext_##T,                                                        \
         .Reset = HashSetReset_##T,                                                              \
         .Dispose = HashSetDispose_##T,                                                          \
-        ._currentIndex = -1,                                                                    \
+        ._currentIndex = -1,                                                                     \
         ._currentNode = NULL,                                                                   \
         ._set = (HashSet(T))This                                                                \
     };                                                                                          \
@@ -162,8 +162,8 @@ HashSet(T) Enumerable_##T##_ToHashSet(IEnumerable(T) source, IEqualityComparer(T
 {                                                                                               \
     ThrowIfNull(source, comparer);                                                              \
     HashSet(T) result = new(HashSet(T))(comparer);                                              \
-    for (IEnumerator(T) e = source->GetEnumerator(source); e->MoveNext(e) || (e->Dispose(e), 0);) { \
-        HashSet_##T##_Add(result, e->Current);                                                  \
+    foreach (T item in source) {                                                                \
+        HashSet_##T##_Add(result, item);                                                        \
     }                                                                                           \
     return result;                                                                              \
 }

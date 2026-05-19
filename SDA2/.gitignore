@@ -1,0 +1,9 @@
+# Cache
+.cache/
+
+# Binaries
+.bin/
+.obj/
+
+# Input/Output files
+indexare.*

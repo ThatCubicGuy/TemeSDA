@@ -19,17 +19,12 @@ TAG(exception_source) {
 
 void Exception_SetFrame(string filename, size_t line)
 {
-    if (exception_source.current_index >= STACKTRACE_SIZE) {
-        fprintf(stderr, "CATASTROPHIC FAILURE: StackTrace overflow\n");
-        fprintf(stderr, "Overflow values: (%s:%zu)\n", filename, line);
-        exit(EXIT_OUT_OF_MEMORY);
-    }
+    DEBUG_FAILFAST_IF(exception_source.current_index >= STACKTRACE_SIZE, "CATASTROPHIC FAILURE: StackTrace overflow\nOverflow values: (%s:%zu)\n", filename, line);
     exception_source.filename[exception_source.current_index] = filename;
     exception_source.line[exception_source.current_index] = line;
     exception_source.current_index += 1;
 }
 
-// #undef Exception__ctor
 #define init_Exception(TYPE, VAR, MESSAGE...) TYPE VAR = memalloc(TYPE); *(Exception)VAR = Exception__init(MESSAGE)
 static inline struct tag_Exception VException__init(string message, va_list args)
 {
@@ -53,7 +48,7 @@ static inline struct tag_Exception Exception__init(string message, ...)
 
 Exception Exception__ctor(string msg, ...)
 {
-    Exception result = malloc(sizeof(*result));
+    Exception result = memalloc(Exception);
     if (!result) throw new(OutOfMemoryException)(sizeof(*result));
     va_list args;
     va_start(args, msg);
