@@ -2,7 +2,7 @@
 #define CDULL_KEYWORDS
 
 // Enable debug info
-#define DEBUG 1
+#define DEBUG 0
 
 #define STD_C94 1994##09L
 #define STD_C99 1999##01L
@@ -93,7 +93,7 @@ typedef unsigned char byte;
         for(int loop_ = 1; loop_ < 2 && e_->MoveNext(e_); ++loop_)              \
             IF_INFERRED(TYPE_VAR,                                               \
             for(TYPE_VAR = e_->Current; loop_; loop_ = 0),                      \
-            for([[maybe_unused]] TYPE_VAR, type_; loop_ == 1; loop_ *= 2)       \
+            for(TYPE_VAR, type_; loop_ == 1; loop_ *= 2)                        \
                 for(TYPE_VAR = (typeof(type_))e_->Current; loop_; loop_ = 0))
 /**
  * @brief Enumerates an IEnumerable<T> and sets VAR to

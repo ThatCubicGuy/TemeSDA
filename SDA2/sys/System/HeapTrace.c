@@ -5,10 +5,10 @@
 // God I need a garbage collector...
 #define HEAPTRACE_SIZE 16384ul
 
-TAG(HeapTrace) {
+static TAG(HeapTrace) {
     size_t alloc_count;
     void* allocs[HEAPTRACE_SIZE];
-} static HeapTrace = {
+} HeapTrace = {
     .alloc_count = 0,
     .allocs = {0},
 };
@@ -18,7 +18,7 @@ void* memalloc_(size_t size)
     DEBUG_WRITELINE("Called memalloc with size %zu. Current heap allocations: %zu", size, HeapTrace.alloc_count);
     // Special functionality of memalloc_ - return last allocation if size is 0
     if (size == 0) return HeapTrace.alloc_count > 0 ? HeapTrace.allocs[HeapTrace.alloc_count - 1] : throwe(new(Exception)("No last allocation to get!"));
-    DEBUG_FAILFAST_IF_NOT(HeapTrace.alloc_count >= 0 && HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "CATASTROPHIC FAILURE: HeapTrace overflow\nHeap index: %zu\n", HeapTrace.alloc_count);
+    DEBUG_FAILFAST_IF_NOT(HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "CATASTROPHIC FAILURE: HeapTrace overflow\nHeap index: %zu\n", HeapTrace.alloc_count);
     HeapTrace.allocs[HeapTrace.alloc_count] = malloc(size);
     for (size_t i = 0; i < HeapTrace.alloc_count; ++i) {
         DEBUG_FAILFAST_IF(HeapTrace.allocs[i] == HeapTrace.allocs[HeapTrace.alloc_count],
@@ -31,7 +31,7 @@ void* zeroalloc_(size_t size)
 {
     DEBUG_WRITELINE("Called zeroalloc with size %zu. Current heap allocations: %zu", size, HeapTrace.alloc_count);
     if (size == 0) throw new(Exception)("Cannot allocate block of size 0! (zeroalloc)");
-    DEBUG_FAILFAST_IF_NOT(HeapTrace.alloc_count >= 0 && HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "CATASTROPHIC FAILURE: HeapTrace overflow\nHeap index: %zu\n", HeapTrace.alloc_count);
+    DEBUG_FAILFAST_IF_NOT(HeapTrace.alloc_count < HEAPTRACE_SIZE - 1, "CATASTROPHIC FAILURE: HeapTrace overflow\nHeap index: %zu\n", HeapTrace.alloc_count);
     HeapTrace.allocs[HeapTrace.alloc_count] = calloc(1, size);
     return HeapTrace.allocs[HeapTrace.alloc_count] ? HeapTrace.allocs[HeapTrace.alloc_count++] : throwe(new(OutOfMemoryException)(size));
 }

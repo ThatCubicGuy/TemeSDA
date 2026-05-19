@@ -2,11 +2,12 @@
 #define COLLECTIONS_GENERIC_ENUMERABLE_IMPLEMENTATIONS
 #include "EnumerableT.h"
 #define ENUMERABLE_IMPLEMENT(T)                                                                         \
-static bool EmptyMoveNext_##T([[maybe_unused]] IEnumerator(T) This) { return false; }                   \
-static void EmptyReset_##T([[maybe_unused]] IEnumerator(T) This) {}                                     \
+static bool EmptyMoveNext_##T(IEnumerator(T) This) { (void)This;  return false; }                       \
+static void EmptyReset_##T(IEnumerator(T) This) { (void)This; }                                         \
 static void EmptyDispose_##T(IEnumerator(T) This) { memfree(This); }                                    \
-static IEnumerator(T) EmptyEnumerator_##T([[maybe_unused]] IEnumerable(T) This)                         \
+static IEnumerator(T) EmptyEnumerator_##T(IEnumerable(T) This)                                          \
 {                                                                                                       \
+    (void)This;                                                                                         \
     IEnumerator(T) result = meminit(IEnumerator(T)) {                                                   \
         .MoveNext = EmptyMoveNext_##T,                                                                  \
         .Reset = EmptyReset_##T,                                                                        \

@@ -32,15 +32,15 @@ USING+=Collections/Generic
 
 # Compiler setup
 CC:=gcc
-CWARNS:=all extra no-missing-braces no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
+CWARNS:=all extra no-missing-braces no-unused-variable no-unknown-pragmas no-microsoft-anon-tag no-dangling-else #required because of one of my macros :moai:
 CEXTRAS:=ms-extensions #sanitize=address
-CFLAGS:=-std=c17 -g ${CWARNS:%=-W%} ${CEXTRAS:%=-f%} -I${HDR} -I${LIB} ${USING:%=-I${HDR}/%}
+CFLAGS:=-std=c17 -g ${CWARNS:%=-W%} ${CEXTRAS:%=-f%} -I${HDR} -I${LIB} ${USING:%=-I${HDR}/%} -include"${HDR}/Keywords.h"
 
 # Functions
 ## Get objects relevant to $1 considering root $2 from list $3.
 get_relevant_objs=$(filter $(basename $(patsubst ${BIN}/%,$(2)/%,$(1)))/% $(basename $(patsubst ${BIN}/%,$(2)/%,$(1))).%,$(3))
 
-build: all
+build: cc all
 	cp ${BIN}/search_index.exe search_index
 
 all: ${EXES}
@@ -54,7 +54,7 @@ void:
 $(basename $(notdir ${EXES})): %: ${BIN}/%.exe void
 	@$<
 
-pack: ${LIBS}
+libs: ${LIBS}
 
 .SECONDEXPANSION:
 ${EXES}: $$(call get_relevant_objs,$$@,${OBJ},${OBJECTS}) ${LIBS} | ${BIN}
@@ -90,15 +90,16 @@ cleanlib:
 reset:
 	rm -rf ${BIN} ${OBJ}
 
+pack: reset
+	zip -FSr 314CB_VlasinAlexCatalin.zip ${SRC}/ ${LIB}/ ${HDR}/ Makefile
+
 debug:
 	@echo -e "\033[36mUniversal dependencies:\033[0m"
 	@echo -e "$(foreach lib,${LIBS},    \033[35m${lib}\033[0m$(patsubst %,\n      \033[34m└──> \033[31m%\033[0m,$(filter ${lib:${BIN}/%.a=${LIBOBJ}/%}%,${LIBOBJECTS}))\n)"
 	@echo -e "\033[36mObject files:\033[33m${OBJECTS:%=\n    %}\033[0m"
 	@echo -e "$(foreach ex,${EXES},\n\033[32m${ex}\033[0m$(patsubst %,\033[33m\n  └──> \033[31m%\033[0m,$(filter ${ex:${BIN}/%.exe=${OBJ}/%}%,${OBJECTS})))"
 
-debuger:
-	@echo -e "TEST:\n$(call get_relevant_objs,$(firstword ${EXES}),${OBJECTS})"
 cc:
 	${CC} --version
 
-.PHONY: all run test clean reset debug cc
+.PHONY: build all run libs test clean reset debug cc

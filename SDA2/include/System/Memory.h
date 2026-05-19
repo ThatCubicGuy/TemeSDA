@@ -1,6 +1,8 @@
 #ifndef C_DULL_MEMORY
 #define C_DULL_MEMORY
 
+#include "Keywords.h"
+
 #define LIBC_MALLOC 0
 #define HEAP_ALLOC 1
 #define ARENA_ALLOC 2

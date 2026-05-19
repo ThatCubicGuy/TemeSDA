@@ -1,6 +1,8 @@
 #ifndef C_DULL_EXCEPTIONS
 #define C_DULL_EXCEPTIONS
 
+#include "Keywords.h"
+
 typedef struct tag_Exception {
     string Message;
     string File;

@@ -90,6 +90,7 @@ ArgumentOutOfRangeException ArgumentOutOfRangeException__ctor(string param_name,
     ArgumentOutOfRangeException result = (ArgumentOutOfRangeException)new(ArgumentException)("Value cannot be null.", param_name);
     result->LowerBound = lower_bound;
     result->UpperBound = upper_bound;
+    return result;
 }
 
 IndexOutOfRangeException IndexOutOfRangeException__ctor(int index, int max_count)
