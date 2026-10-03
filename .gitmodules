@@ -1,0 +1,3 @@
+[submodule "lab999/C-Enumerables"]
+	path = lab999/C-Enumerables
+	url = github:ThatCubicGuy/C-Enumerables
